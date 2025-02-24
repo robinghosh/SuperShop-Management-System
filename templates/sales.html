@@ -1,0 +1,149 @@
+{% extends "master.html" %}
+
+{% block title %}Sales Records{% endblock %}
+
+{% block content %}
+<div class="container mt-4 p-4 bg-light shadow rounded">
+    <h1 class="text-center text-primary">Sales Records</h1>
+    <table class="table table-light table-borderless table-responsive">
+        <thead class="thead-light">
+            <tr class="text-center h5">
+                <th class="table-dark rounded-pill" colspan="4">Total Sales: {{ total_sales_count }}<br> Total Value: TK{{ total_sales_value }}</th>
+                
+                <th class="bg-primary text-light rounded-pill" colspan="4">Todays Sales: {{todays_sales_count}}<br> Todays Value: TK{{todays_total_sales_value}}</th>
+            </tr>
+        <tbody>
+            <tr>
+                <td colspan="8" class="text-center">
+                    
+                    <div class="d-flex col-md-10 mx-auto flex-row m-2 justify-content-center">
+                        <label class="h5 text-primary justify-content-lg-start me-1"><b> Search Records</b></label>
+                        <form method="GET" class="me-2">
+                            <input type="hidden" name="form_type" value="query_by_sales_date_form">
+                            <label class="h5 text-primary" for="query_date">By Date:</label> 
+                            <input class="rounded-5"type="date" name="query_date" id="query_date" >
+                            <button type="submit" class="btn btn-primary btn-sm rounded-4" id="submitBtn">Search</button>
+                        </form>
+
+                        <p class="text-primary h5">or</p>
+
+                        <form method="GET" class="ms-2">
+                            <input type="hidden" name="form_type" value="query_by_id_form">
+                            <label class="h5 text-primary" for="query_date">By Invoice #</label> 
+                            <input class="rounded-5"id="query_id" name="query_id" type="text" placeholder="Invoice No.">
+                            <button type="submit" class="btn btn-primary btn-sm rounded-4">Search</button>
+                        </form>
+                    </div>
+                    <div>
+                        {% if messages %}
+                            {% for message in messages %}
+                                <ul class="" style="list-style: none;">
+                                    <li style="color: {% if message.tags == 'success' %}green{% else %}red{% endif %};">
+                                        {{ message|safe }}
+                                    </li>
+                                </ul>      
+                            {% endfor %}
+                        {% endif %}
+                      </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <table class="table table-light table-group-divider table-bordered table-hover table-responsive">
+        <thead>            
+            <tr class="text-center justify-content-between align-middle h5 table-dark">
+                <th>Invoice</th>
+                <th>Customer Phone</th>
+                <th>Products</th>               
+                <th>Subtotal</th>
+                <th>VAT(%)</th>
+                <th>Discount(%)</th>
+                <th>Total</th>
+                <th>Sale Date & Time</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% comment %} {% if page_obj.object_list %}
+            {% for record in page_obj.object_list %}
+                <tr>
+                    <td>{{ record.salesId }}</td>
+                    <td> +880{{ record.customer.customerPhone }}</td>
+                    <td>{% for item in record.items.all  %}{{ forloop.counter }}. {{item.productName}} - QTY: {{item.quantity}}<hr>{% endfor %}</td>
+                                   
+                    <td>{% for item in record.items.all  %} {{item.subtotal}}<hr>{% endfor %}</td>
+                    
+                    
+                    <td>{{ record.vatAmmount }}({{ record.vat }}%)</td>
+                    <td>{{ record.discountAmmount }}({{ record.discount }}%)</td>
+                    <td>{{ record.netTotal }}</td>
+                    <td>{{ record.sale_date|date:" j F, Y g:i A" }}</td>
+                    <td><a href="{% url 'invoice' record.salesId %}" target="_blank" rel="noopener noreferrer"><span class="material-icons">receipt</span></a></td>
+                </tr>        
+            {% endfor %}
+            {% else %} {% endcomment %}
+            {% for record in page_obj.object_list %}
+            
+                <tr class="" id="salesTable">
+                    <td class="text-center">{{ record.salesId }}</td>
+                    <td class="text-center"> +880{{ record.customer.customerPhone }}</td>
+                    <td><b>{% for item in record.items.all  %}{{ forloop.counter }}. {{item.productName}} - QTY: {{item.quantity}}{% if record.items.all|length == 1 %}{% else %}<hr>{% endif %}{% endfor %}</b></td>
+
+                    <td class="text-center">{% for item in record.items.all  %}{{item.subtotal}}/-<hr>{% endfor %}</td>                    
+                    
+                    <td class="text-center">{{ record.vatAmmount }}/-({{ record.vat }}%) </td>
+                    <td class="text-center">{{ record.discountAmmount }}/-({{ record.discount }}%)</td>
+                    <td class="text-center"><b>{{ record.netTotal }}/-</b></td>
+                    <td class="text-center">{{ record.sale_date|date:" j F, Y g:i A" }}</td>
+                    <td class="text-center"><a class="link-style-none" href="{% url 'invoice' record.salesId%}" target="_blank" rel="noopener noreferrer" alt="invoice"><span class="material-icons">receipt</span></a></td>
+                </tr>
+                             
+            {% empty %}
+                <tr>
+                    <td colspan="9" class="text-center">No records found</td>
+                </tr>
+            {% endfor %}
+            {% comment %} {% endif %} {% endcomment %}
+            
+        </tbody>
+    </table>
+
+    <!-- Pagination Navigation -->
+    <nav aria-label="Page navigation">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+                </li>
+            {% else %}
+                <li class="page-item disabled">
+                    <a class="page-link">Previous</a>
+                </li>
+            {% endif %}
+
+            {% for num in page_obj.paginator.page_range %}
+                <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+                    <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                </li>
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+                </li>
+            {% else %}
+                <li class="page-item disabled">
+                    <a class="page-link">Next</a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+</div>
+
+<script>
+    {% comment %} const dateInput = document.getElementById("query_date");
+    dateInput.valueAsDate = "2025-02-22"; {% endcomment %}
+    document.getElementById("query_date").value = "{{ today|date:"Y-m-d" }}";
+    
+</script>
+{% endblock %}

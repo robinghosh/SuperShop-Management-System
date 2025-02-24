@@ -1,0 +1,72 @@
+{% extends "master.html" %}
+{% load static %}
+{% block title %}
+  Dashboard
+{% endblock %}
+    
+{% block content %}
+<div class="d-flex align-items-center justify-content-center flex-column mb-0">
+    <p class="h1 text-primary">Super Shop Management System</p>
+    <p class="h2 text-primary">Welcome, {{user.username}}<p>
+</div>
+<div class="d-flex align-items-center justify-content-center" >
+    <div class="w-75 bg-light p-4 rounded shadow">
+        <h1 class="mb-5 text-primary">Super Shop Management System</h1>
+    <div class="row row-cols-1 row-cols-md-2 g-4 justify-content-center">
+        <!-- Card 1 -->
+        <div class="col">
+            <a href="{% url "products" %}" class="text-decoration-none">
+                <div class="card h-100 shadow-sm">
+
+                    {% comment %} <img src="{% static "images/product_image.jpg" %}" class="card-img-top" alt="Card Image"> {% endcomment %}
+                    
+                    <div class="card-body">
+                        
+                        <h5 class="card-title text-primary">Products</h5>
+                        <p class="card-text text-muted">Track all your procucts.</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <!-- Card 2 -->
+        <div class="col">
+            <a href="{% url "billing" %}" class="text-decoration-none">
+                <div class="card h-100 shadow-sm">
+                    {% comment %} <img src="{% static 'images/billing_image.jpg' %}" class="card-img-top" width="30%" height="20%" alt="Card Image"> {% endcomment %}
+                    <div class="card-body">
+                        <h5 class="card-title text-primary">Billing</h5>
+                        <p class="card-text text-muted">Billing page for sales billing entries.</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <!-- Card 3 -->
+        <div class="col">
+            <a href="{% url "customers" %}" class="text-decoration-none">
+                <div class="card h-100 shadow-sm">
+                    <!-- <img src="https://via.placeholder.com/300x200" class="card-img-top" alt="Card Image"> -->
+                    <div class="card-body">
+                        <h5 class="card-title text-primary">Customers</h5>
+                        <p class="card-text text-muted">Track customers.</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <!-- Card 4 -->
+        <div class="col">
+            <a href="{% url "sales" %}" class="text-decoration-none">
+                <div class="card h-100 shadow-sm">
+                    <!-- <img src="https://via.placeholder.com/300x200" class="card-img-top" alt="Card Image"> -->
+                    <div class="card-body">
+                        <h5 class="card-title text-primary">Records</h5>
+                        <p class="card-text text-muted">Sales Records</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+    </div>
+</div>
+
+
+{% endblock %}

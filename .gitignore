@@ -1,0 +1,38 @@
+# Virtual environment
+venv/
+.Venv/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Database (ignore if using PostgreSQL/MySQL)
+db.sqlite3
+*.sqlite3
+
+# Static files (ignore collected ones, keep custom ones)
+staticfiles/
+
+# Media files (optional, depends on your setup)
+
+# Environment variables
+.env
+*.env
+
+# System files
+desktop.ini
+
+# PDFs and generated files
+*.pdf
+
+# Logs & Debug Files
+logs/
+*.log
+
+# Django migrations cache (optional)
+*/migrations/__pycache__/
+
+# VS Code & JetBrains settings (optional)
+.vscode/
+.idea/

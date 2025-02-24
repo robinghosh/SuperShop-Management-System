@@ -1,0 +1,156 @@
+{% extends "master.html" %} 
+{% block title %} Products - Super Shop Management System{% endblock %} 
+{% block content %}
+<div class="container text-center">
+  <div class="container mt-4 p-4 bg-light shadow rounded">
+    <!--Popup table-->    
+      <div>
+        {% if messages %}
+            {% for message in messages %}
+                <ul class="" style="list-style: none;">
+                    <li style="color: {% if message.tags == 'success' %}green{% else %}red{% endif %};">
+                        {{ message }}
+                    </li>
+                </ul>      
+            {% endfor %}
+        {% endif %}
+      </div>
+      <!--Form to add daa-->
+      <div
+        class="form-popup mb-4 mt-4 align-middle"
+        id="addPopUpForm"
+        style="display: none; position: center; transition: 0.5s;">
+        <h4 class="text-primary">Enter New Product Details</h4>
+
+        <form
+          method="post"
+          action="{% url "products" %}"
+          class="form-container"
+          style="max-width: 90vw; padding: 0px; position:center;">
+          {% csrf_token %}
+          <div class="row">
+            <div class="col">
+                <input class="form-control" type="text" id="name" placeholder="Product Name" name="name"/>
+            </div>
+            <div class="col">
+                <input class="form-control" type="text" id="barcode" placeholder="Barcode" name="barcode"/>
+            </div>
+            <div class="col">
+                <input class="form-control" type="text" id="price" placeholder="Price" name="price"/>
+            </div>
+            <div class="col">
+                <input class="form-control" type="text" id="stock" placeholder="Stock" name="stock"/>
+            </div>
+            <div class="col" style="display: flex;">
+                <button class="btn btn-primary" type="submit" style="width: 15vw;">Submit</button>
+                <button class="btn btn-danger" type="button" id="closePopUp" style="width: 5vw; margin-left: 2px;"><span class="material-icons">close</span></button>
+            </div>         
+          </div>            
+        </form>
+      </div>
+            
+    <div class="" style="display: flex; justify-content: center; padding:5px;">
+        <h2 class="text-primary text-center">Products List</h2>     
+        <button id="addproduct" class="btn bg-primary text-white ms-2" style="display: block;"><span class="material-icons">add</span></button>
+    </div>
+
+
+
+    <table class="table table-bordered table-responsive  justify-content-center">
+      <thead class="table-info align-middle">
+          <tr class="h4">
+              <th>ID</th>
+              <th>Product Name</th>
+              <th>Barcode</th>
+              <th>Price (BDT)</th>
+              <th>Stock</th>
+              <th>Created</th>
+              <th>Updated</th>
+              <th>Actions</th>
+          </tr>
+      </thead>
+      <tbody class="align-middle">
+          {% for product in page_obj.object_list %}
+              <tr>
+                <td><p>{{product.productId}}</p></td>
+                <td><p>{{product.productName}}</p></td>
+                <td><p>{{product.barcode}}</p></td>
+                <td><p>{{product.price}} TK</p></td>
+                <td><p>{{product.stock}}</p></td>
+                <td><p>{{product.created|date:" j F, Y g:i A"}}</p></td>
+                <td><p>{{product.updated|date:" j F, Y g:i A"}}</p></td>
+                <td>
+                    <form action="{% url 'delete_item' product.productId %}" method="POST" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this item?');">
+                        {% csrf_token %}                       
+                        <button type="submit" class="btn bg-primary text-white btn-sm" style="display: inline;"><span class="material-icons">delete</span></button>
+                    </form>                        
+           
+                    <button type="button" class="btn bg-primary text-white btn-sm"><a class="text-white link-offset-2 icon-link-hover" href="edit/{{ product.productId }}"><span class="material-icons">edit</span></a></button>
+                    
+                    
+                   
+                </td>
+              </tr>
+          {% empty %}
+              <tr>
+                  <td colspan="9" class="text-center">No records found</td>
+              </tr>
+          {% endfor %}
+      </tbody>
+  </table>
+  <nav aria-label="Page navigation example">
+    <ul class="pagination justify-content-center">
+        {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+            </li>
+        {% else %}
+            <li class="page-item disabled">
+                <a class="page-link">Previous</a>
+            </li>
+        {% endif %}
+
+        {% for num in page_obj.paginator.page_range %}
+            <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+                <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+            </li>
+        {% endfor %}
+
+        {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+            </li>
+        {% else %}
+            <li class="page-item disabled">
+                <a class="page-link">Next</a>
+            </li>
+        {% endif %}
+    </ul>
+</nav>
+  </div>
+</div>
+<script>
+  //define button and form//
+  const addPopUpForm = document.getElementById("addPopUpForm");
+
+  var addButton = document.getElementById("addproduct");
+  var closeButton = document.getElementById("closePopUp");
+
+  //Form Pop-Up//
+  //button.onclick = () => {window.open('hello!')};//
+
+  //button function//
+  addButton.addEventListener("click", function () {
+    document.getElementById("addPopUpForm").style.display = "block"; 
+
+  });
+
+  closeButton.addEventListener("click", function () {
+    document.getElementById("addPopUpForm").style.display = "none";
+    document.getElementById("editPopUpForm").style.display = "none";
+
+  });
+
+</script>
+
+{% endblock %}

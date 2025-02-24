@@ -1,0 +1,64 @@
+<nav class="navbar navbar-expand-lg navbar-custom bg-active">
+    <div class="container-fluid">
+      <a class="navbar-brand fw-b m-2" href="{% url 'home' %}">Super Shop Management System</a>
+      <button
+        class="navbar-toggler bg-light"
+        type="button"
+        data-bs-toggle="collapse"
+        data-bs-target="#navbarNav"
+        aria-controls="navbarNav"
+        aria-expanded="false"
+        aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto text-center">
+            {% if user.is_authenticated %} <!--Show Navbar only if the user is logged in-->
+            <li class="nav-item m-1">
+                <a class="nav-link px-3" href="{% url "billing" %}">Billing</a>
+            </li>
+            <li class="nav-item m-1">
+                <a class="nav-link px-3" href="{% url "sales" %}">Sales</a>
+            </li>
+            <li class="nav-item m-1">
+                <a class="nav-link px-3" href="{% url "products" %}">Products</a>
+            </li>
+            <li class="nav-item m-1">
+                <a class="nav-link px-3" href="{% url "customers" %}">Customers</a>
+            </li>
+                <!--If the user is a Admin/SuperUser then show admin button-->
+                {% if user.is_superuser %}
+                    <li class="nav-item m-1">
+                        <a class="nav-link px-3 bg-info text-light" href="{% url 'admin:index' %}" target="_blank" >Admin</a>
+                    </li>
+                {% endif %}
+            <!--Show the username-->
+            <li class="nav-item m-1 d-flex align-items-center">
+                <span class="material-icons text-light">person</span>
+                <p class="text-light h3 ms-1">{{ user.username }}</p>
+            </li>
+            <li class="nav-item m-1 me-0">
+                <form method="post" action="{% url 'logout' %}">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-danger btn-md rounded-3">Logout</button>
+                </form>
+            </li>              
+            {% else %}
+            <li class="nav-item m-1">
+                <a class="nav-link" href="{% url "features" %}">Features</a>
+            </li>
+            <li class="nav-item m-1">
+                <a class="nav-link" href="{% url "about" %}">About</a>
+            </li>
+            <li class="nav-item m-1">
+                <a class="nav-link" href="{% url "faq" %}">FAQ</a>
+            </li>           
+            {% endif %}
+
+
+        </ul>
+      </div>
+      
+    </div>
+  </nav>

@@ -1,0 +1,45 @@
+<footer class="d-flex flex-wrap align-items-center border-top mb-0 mt-2 ms-2 border-primary justify-content-start">
+    <p class="mt-4 text-success">
+        <span class="h4">©{{year}} Super Shop Management System.</span><br> 
+        Developed By:
+        <a
+        class="btn btn-success btn-md"
+        href="https://github.com/robinghosh"
+        target="_blank"
+        ><b>ROBIN GHOSH</b></a>
+        
+    </p>
+    
+
+
+  <ul class="nav me-2 mt-2 justify-content-center-end mx-auto">
+    {% if user.is_authenticated %}
+    <li class="nav-item">
+      <a href="{% url 'dashboard' %}" class="nav-link px-2"
+        >Dashboard</a
+      >
+    </li>
+    {% else %}
+    <li class="nav-item">
+      <a href="{% url 'home' %}" class="nav-link px-2"
+        >Home</a
+      >
+    </li>
+    {% endif %}
+    <li class="nav-item">
+      <a href="{%url 'features'%}" class="nav-link px-2 "
+        >Features</a
+      >
+    </li>
+    <li class="nav-item">
+      <a href="{% url 'faq' %}" class="nav-link px-2 "
+        >FAQs</a
+      >
+    </li>
+    <li class="nav-item">
+      <a href="{% url 'about' %}" class="nav-link px-2 "
+        >About</a
+      >
+    </li>
+  </ul>
+</footer>

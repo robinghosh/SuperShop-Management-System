@@ -1,0 +1,32 @@
+{% extends "master.html" %}
+
+{% block title %}Edit Product Details{% endblock %}
+
+{% block content %}
+    {% if products %}
+        <div class="d-flex align-items-center justify-content-center" style="min-height: 70vh;">
+            <div style="max-width: 50%; width: 100%; background: #f8f9fa; padding: 20px; border-radius: 10px; box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);">
+                <h3 class="mb-4 text-center">Update Details of: <b>{{ products.productName }}</b></h3>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <input class="form-control" type="text" id="name" placeholder="Product Name" name="updated_name" value="{{ products.productName }}" />
+                    </div>
+                    <div class="mb-3">
+                        <input class="form-control" type="text" id="barcode" placeholder="Barcode" name="updated_barcode" value="{{ products.barcode }}" />
+                    </div>
+                    <div class="mb-3">
+                        <input class="form-control" type="text" id="price" placeholder="Price" name="updated_price" value="{{ products.price }}" />
+                    </div>
+                    <div class="mb-3">
+                        <input class="form-control" type="text" id="Stock" placeholder="Stock" name="updated_stock" value="{{ products.stock }}" />
+                    </div>
+                    <div class="mb-3 text-center">
+                        <button class="btn btn-primary" type="submit" style="width: 15vw;">Update</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}
