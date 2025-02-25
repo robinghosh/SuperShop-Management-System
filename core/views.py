@@ -182,6 +182,7 @@ def billing(request):
                 try:
                     vatPercent = Decimal(vatPercent)
                     discountPercent = Decimal(discountPercent)
+                    customerPhone = int(customerPhone)
                     total = sum(Decimal(item['price']) * item['quantity'] for item in scanned_items)
                     vat = (total * vatPercent) / 100
                     discount = (total * discountPercent) / 100
