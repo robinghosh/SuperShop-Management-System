@@ -1,8 +1,9 @@
+{% load static %}
 <nav class="navbar navbar-expand-lg navbar-custom bg-active">
     <div class="container-fluid">
-      <a class="navbar-brand fw-b m-2" href="{% url 'home' %}">Super Shop Management System</a>
+      <a class="navbar-brand" href="{% url 'home' %}"><img class="img-fluid" src="{% static 'images/ssms_logo.png' %}" style='width: 50px; height: auto;' alt="Super Shop Management System">SSMS</a>
       <button
-        class="navbar-toggler bg-light"
+        class="navbar-toggler bg-light justify-content-center"
         type="button"
         data-bs-toggle="collapse"
         data-bs-target="#navbarNav"
@@ -34,9 +35,9 @@
                     </li>
                 {% endif %}
             <!--Show the username-->
-            <li class="nav-item m-1 d-flex align-items-center">
-                <span class="material-icons text-light">person</span>
-                <p class="text-light h3 ms-1">{{ user.username }}</p>
+            <li class="nav-item m-1">
+                
+                <p class="text-light h3 ms-1"> <span class="material-icons text-light">person</span>{{ user.username }}</p>
             </li>
             <li class="nav-item m-1 me-0">
                 <form method="post" action="{% url 'logout' %}">
