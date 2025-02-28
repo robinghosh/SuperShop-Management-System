@@ -1,7 +1,7 @@
 from django.db import models
 from decimal import Decimal
+from django.contrib.auth.models import User
 
-# Create your models here.
 class Inventory(models.Model):
     productId = models.AutoField(primary_key=True)
     productName = models.CharField(max_length=255)
@@ -17,7 +17,8 @@ class Inventory(models.Model):
         product.save()
 
     def __str__(self):
-        return f"{self.productId}, Name: {self.productName}, Barcode: {self.barcode}, Price: {self.price}"
+        return f"{self.outlet.outletName} - {self.productId}, Name: {self.productName}, Barcode: {self.barcode}, Price: {self.price}"
+    
 class Customer(models.Model):
     customerPhone = models.BigIntegerField(primary_key=True)  # Unique customer identifier
     purchase_count = models.IntegerField(default=0)
@@ -43,12 +44,14 @@ class Customer(models.Model):
 class SalesRecord(models.Model):
     salesId = models.AutoField(primary_key=True)
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE)  # Link to Customer
+    user = models.ForeignKey(User, on_delete=models.SET_DEFAULT, default=User.objects.get(username='admin').id) # Link to user
     vat = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     vatAmmount = models.DecimalField(max_digits=10, decimal_places=2, default=0) 
     discount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     discountAmmount = models.DecimalField(max_digits=10, decimal_places=2, default=0) 
     netTotal = models.DecimalField(max_digits=10, decimal_places=2, default=0)  # Total for all items
     sale_date = models.DateTimeField(auto_now_add=True)
+    paymentMethod = models.CharField(max_length=10, default='Cash')
 
     def update_totals(self, net_total=None):
         """Updates net total based on the provided value, avoiding redundant calculations."""
@@ -57,7 +60,7 @@ class SalesRecord(models.Model):
         self.save()
 
     def __str__(self):
-        return f"Sale ID: {self.salesId} | Customer: {self.customer.customerPhone} | Total: {self.netTotal} | Date: {self.sale_date.strftime('%Y-%m-%d %H:%M:%S')}"
+        return f"Sale ID: {self.salesId} | Customer: {self.customer.customerPhone} | Total: {self.netTotal} | User: {self.user.username} | Date: {self.sale_date.strftime('%Y-%m-%d %H:%M:%S')}"
 
 
 class SalesItem(models.Model):

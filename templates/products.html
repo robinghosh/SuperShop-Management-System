@@ -4,29 +4,30 @@
 <div class="container text-center">
   <div class="container mt-4 p-4 bg-light shadow rounded">
     <!--Popup table-->    
-      <div>
+    <div class="mx-auto bg-light rounded-pill col-md-4 mt-4 mb-2 p-1 justify-content-center text-center">
         {% if messages %}
             {% for message in messages %}
-                <ul class="" style="list-style: none;">
+                <ul class="fw-b list-unstyled h5">
                     <li style="color: {% if message.tags == 'success' %}green{% else %}red{% endif %};">
-                        {{ message }}
+                        {{ message|safe }}
+                        
                     </li>
                 </ul>      
             {% endfor %}
         {% endif %}
-      </div>
+    </div>
       <!--Form to add daa-->
       <div
         class="form-popup mb-4 mt-4 align-middle"
         id="addPopUpForm"
-        style="display: none; position: center; transition: 0.5s;">
+        style="display: none;">
         <h4 class="text-primary">Enter New Product Details</h4>
 
         <form
           method="post"
           action="{% url "products" %}"
-          class="form-container"
-          style="max-width: 90vw; padding: 0px; position:center;">
+          class="table-responsive"
+          style="max-width: 100%;">
           {% csrf_token %}
           <div class="row">
             <div class="col">
@@ -55,49 +56,59 @@
     </div>
 
 
+    <div class="table overflow-x-auto">
+        <table class="table table-bordered table-responsive  justify-content-center">
+            <thead class="table-success align-middle">
+                <tr class="h4">
+                    <th>ID</th>
+                    <th>Product Name</th>
+                    <th>Barcode</th>
+                    <th>Price (BDT)</th>
+                    <th>Stock</th>
+                    <th>Created</th>
+                    <th>Updated</th>
+                    <th class="position-sticky end-0 table-info"><span class="material-icons">build</span></th>
+                </tr>
+            </thead>
+            <tbody class="align-middle fw-bold">
+                {% for product in page_obj.object_list %}
+                    {% if product.stock == 0 %}
+                    <tr class="table-danger">
+                    {% elif product.stock < 10 %}
+                    <tr class="table-warning">
+                    {% else %}
+                    <tr>
+                    {% endif %}
+                    
+                        <td>{{product.productId}}</td>
+                        <td class="text-dark">{{product.productName}}</p></td>
+                        <td>{{product.barcode}}</p></td>
+                        <td>{{product.price}} TK</p></td>
+                        <td>{{product.stock}}</p></td>
+                        <td>{{product.created|date:" j F, Y g:i A"}}</p></td>
+                        <td>{{product.updated|date:" j F, Y g:i A"}}</p></td>
 
-    <table class="table table-bordered table-responsive  justify-content-center">
-      <thead class="table-info align-middle">
-          <tr class="h4">
-              <th>ID</th>
-              <th>Product Name</th>
-              <th>Barcode</th>
-              <th>Price (BDT)</th>
-              <th>Stock</th>
-              <th>Created</th>
-              <th>Updated</th>
-              <th>Actions</th>
-          </tr>
-      </thead>
-      <tbody class="align-middle">
-          {% for product in page_obj.object_list %}
-              <tr>
-                <td><p>{{product.productId}}</p></td>
-                <td><p>{{product.productName}}</p></td>
-                <td><p>{{product.barcode}}</p></td>
-                <td><p>{{product.price}} TK</p></td>
-                <td><p>{{product.stock}}</p></td>
-                <td><p>{{product.created|date:" j F, Y g:i A"}}</p></td>
-                <td><p>{{product.updated|date:" j F, Y g:i A"}}</p></td>
-                <td>
-                    <form action="{% url 'delete_item' product.productId %}" method="POST" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this item?');">
-                        {% csrf_token %}                       
-                        <button type="submit" class="btn bg-primary text-white btn-sm" style="display: inline;"><span class="material-icons">delete</span></button>
-                    </form>                        
-           
-                    <button type="button" class="btn bg-primary text-white btn-sm"><a class="text-white link-offset-2 icon-link-hover" href="edit/{{ product.productId }}"><span class="material-icons">edit</span></a></button>
-                    
-                    
-                   
-                </td>
-              </tr>
-          {% empty %}
-              <tr>
-                  <td colspan="9" class="text-center">No records found</td>
-              </tr>
-          {% endfor %}
-      </tbody>
-  </table>
+                        <td class="position-sticky end-0 d-d-none">
+                            <form action="{% url 'delete_item' product.productId %}" method="POST" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this item?');">
+                                {% csrf_token %}                       
+                                <button type="submit" class="btn bg-primary text-white btn-sm m-2" style="display: inline;"><span class="material-icons">delete</span></button><br>
+                            </form>                        
+                
+                            <button type="button" class="btn bg-primary text-white btn-sm"><a class="text-white link-offset-2 icon-link-hover" href="edit/{{ product.productId }}"><span class="material-icons">edit</span></a></button>
+                            
+                            
+                        
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="9" class="text-center">No records found</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% comment %} paginator {% endcomment %}
   <nav aria-label="Page navigation example">
     <ul class="pagination justify-content-center">
         {% if page_obj.has_previous %}

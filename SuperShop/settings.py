@@ -138,5 +138,7 @@ LOGOUT_REDIRECT_URL = ''  # Redirect to login after logout
 # Authentication backends
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
+    
 )
+
 

@@ -26,6 +26,20 @@
 {% endblock script %}
     
 {% block content %}
+
+<!--Error Messages-->
+<div class="mx-auto bg-light rounded-pill col-md-4 mt-4 mb-2 p-1 justify-content-center text-center">
+    {% if messages %}
+        {% for message in messages %}
+            <ul class="fw-b list-unstyled h5">
+                <li style="color: {% if message.tags == 'success' %}green{% else %}red{% endif %};">
+                    {{ message|safe }}
+                    
+                </li>
+            </ul>      
+        {% endfor %}
+    {% endif %}
+</div>
 <div class="container mb-4 mt-4">
     <!-- Barcode Input Form -->
     <form method="POST">
@@ -65,19 +79,7 @@
             </div>
         </div>
     </form>
-    <!--Error Messages-->
-    <div class="mx-auto bg-light rounded-pill col-md-4 mt-4 mb-2 p-1 justify-content-center text-center">
-        {% if messages %}
-            {% for message in messages %}
-                <ul class="fw-b list-unstyled h5">
-                    <li style="color: {% if message.tags == 'success' %}green{% else %}red{% endif %};">
-                        {{ message|safe }}
-                        
-                    </li>
-                </ul>      
-            {% endfor %}
-        {% endif %}
-    </div>
+    
     <!-- Scanned Products Table -->
     {% if scanned_items %}
     <div class="container mt-4 p-4 bg-light rounded shadow ">
@@ -147,12 +149,24 @@
             <div class="row mb-3">
                 <label for="customerPhone" class="col-sm-3 col-form-label text-end">Customer Phone:</label>
                 <div class="col-sm-9 input-box-customerPhone">
-                    <p class="form-control">+880 <input type="tel" class="border-0 w-75" maxlength="10" minlength="10" id="customerPhone" name="customerPhone" placeholder="Enter Customer Phone"></p>
-                        
-                    </span>            
+                    <p class="form-control">+880 <input type="tel" class="border-0 w-75" maxlength="11" minlength="10" id="customerPhone" name="customerPhone" placeholder="Enter Customer Phone"></p>
+                       
+                           
                 </div>
             </div>
-            
+            <div class="row mb-3">
+                <label for="paymentMethod" class="col-sm-3 col-form-label text-end">Payment Method:</label>
+                <div class="col-sm-9 radiolist ">                    
+                    <input class="" type="radio" name="paymentMethod" id="cash" value="Cash">                
+                    <label class="me-2" for="cash">Cash</label>
+                    <input type="radio" name="paymentMethod" id="bkash" value="Bkash">                
+                    <label class="me-2" for="cash">Bkash</label>
+                    <input type="radio" name="paymentMethod" id="nagad" value="Nagad">                
+                    <label class="me-2" for="cash">Nagad</label>
+                    <input type="radio" name="paymentMethod" id="card" value="Card">                
+                    <label for="cash">Card</label>
+                </div>
+            </div>
             
             <div class="text-center">
                 <button class="btn btn-primary" type="submit">Submit Order</button>
@@ -176,7 +190,7 @@
             btn.click()
         }
     }
-    document.addEventListener("DOMContentLoaded", function () {
+    /*document.addEventListener("DOMContentLoaded", function () {
         document.querySelectorAll("input[name='quantities']").forEach(input => {
             input.addEventListener("input", function () {
                 let min = parseInt(this.min);
@@ -187,7 +201,7 @@
                 if (value > max) this.value = max;  // Prevent values above max
             });
         });
-    });
+    });*/
     
 </script> 
 {% endblock content %}

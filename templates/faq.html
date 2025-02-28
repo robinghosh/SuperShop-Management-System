@@ -5,5 +5,55 @@
 {% endblock %}
     
 {% block content %}
+<div class="container mt-4 p-4 bg-light shadow rounded">
+    <div class="d-grid justify-content-center">
+        <h1 class="text-primary">FAQ</h1>
+        <h2 class="text-primary">Frequently Asked Questions and Answers Listed Below:</h2>
+    </div>
 
+    <div class="container">
+        <div class="faq d-flex flex-column">
+
+            <!--FAQ 1-->
+            <a class="text-decoration-none h5 border border-2 rounded-3 m-2 py-2" data-bs-toggle="collapse" href="#ans-1" role="button" aria-expanded="false" aria-controls="ans-1">
+                <b>Q:</b> How to add products?
+            </a>
+            <div class="collapse mb-2" id="ans-1">
+                <div class="card card-body d-block">
+                  <b>Answer:</b> On <a target="_blank" href="{% url "products" %}">Products page</a>, click on the <span class="material-icons">add</span> icon and fill the details. The barcode is unique for each product.
+                </div>
+            </div>
+
+            <!--FAQ 2-->
+            <a class="text-decoration-none h5 border border-2 rounded-3 m-2 py-2" data-bs-toggle="collapse" href="#ans-2" role="button" aria-expanded="false" aria-controls="ans-2">
+                <b>Q:</b> How to delete a product?
+            </a>
+            <div class="collapse" id="ans-2">
+                <div class="card card-body d-block">
+                  <b>Answer:</b> On <a target="_blank" href="{% url "products" %}">Products page</a>, in product list here is a <span class="material-icons">delete</span> icon in the Actions column for each product. Click it to remove a product.
+                </div>
+            </div>
+
+            <!--FAQ 3-->
+            <a class="text-decoration-none h5 border border-2 rounded-3 m-2 py-2" data-bs-toggle="collapse" href="#ans-3" role="button" aria-expanded="false" aria-controls="ans-3">
+                <b>Q:</b> How to update/edit a products details?
+            </a>
+            <div class="collapse" id="ans-3">
+                <div class="card card-body d-block">
+                  <b>Answer:</b> On <a target="_blank" href="{% url "products" %}">Products page</a>, in product list, click <span class="material-icons">edit</span> icon to edit/update a products details.
+                </div>
+            </div>
+            
+            <!--FAQ 4-->
+            <a class="text-decoration-none h5 border border-2 rounded-3 m-2 py-2" data-bs-toggle="collapse" href="#ans-4" role="button" aria-expanded="false" aria-controls="ans-4">
+                <b>Q:</b> What if I forgot my password/username?
+            </a>
+            <div class="collapse" id="ans-4">
+                <div class="card card-body d-block">
+                  <b>Answer:</b> Contact system <b>Admin</b>, if you forgot your password/username.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

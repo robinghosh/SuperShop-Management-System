@@ -20,6 +20,8 @@ from decimal import Decimal
 
 
 
+
+
 #Index/Home/Login View
 class CustomLoginView(LoginView):
     template_name = 'home.html' 
@@ -30,6 +32,7 @@ class CustomLoginView(LoginView):
             return redirect('dashboard')
         return super().get(request, *args, **kwargs)
     
+
 #Dashboard View
 @login_required
 def dashboard(request):
@@ -41,6 +44,7 @@ def dashboard(request):
 @login_required
 def products(request):
     products = Inventory.objects.all()
+    
     paginator = Paginator(products, 10)  # Show 10 records per page
 
     page_number = request.GET.get('page')  # Get the current page number from query params
@@ -57,6 +61,7 @@ def products(request):
         barcode = request.POST.get('barcode')
         price = request.POST.get('price')
         stock = request.POST.get('stock')
+        
         
 
         # Validate and save data
@@ -121,6 +126,8 @@ def edit_item(request, productId):
 
 @login_required
 def billing(request):
+    user = request.user #get_logged_in_user
+    
     products = Inventory.objects.all()
     scanned_items = request.session.get('scanned_items', [])  # Retrieve stored items
     calculated_data = None
@@ -171,14 +178,14 @@ def billing(request):
                         scanned_items.remove(i)
                         request.session['scanned_items'] = scanned_items               
             except:
-                pass
+                messages.error(request, "Can not remove item")
 
         elif form_type == 'form2':  # Checkout processing
             vatPercent = request.POST.get('vatPercent')
             discountPercent = request.POST.get('discountPercent')
             customerPhone = request.POST.get('customerPhone')
-           
-            if scanned_items and vatPercent and customerPhone:
+            paymentMethod = request.POST.get('paymentMethod')
+            if scanned_items and vatPercent and customerPhone and paymentMethod:
                 try:
                     vatPercent = Decimal(vatPercent)
                     discountPercent = Decimal(discountPercent)
@@ -190,16 +197,19 @@ def billing(request):
 
                     # Get or create customer
                     customer, _ = Customer.objects.get_or_create(customerPhone=customerPhone)
-
+                    
                     # Create a single sales record for the transaction
                     sale = SalesRecord.objects.create(
                         customer=customer,
+                        user=user,
                         vat=vatPercent,
                         vatAmmount=vat,
                         discount=discountPercent,
                         discountAmmount=discount,
-                        netTotal=netTotal
+                        netTotal=netTotal,
+                        paymentMethod=paymentMethod,
                     )
+                    
                     sale.update_totals(net_total=netTotal) #finalizing
 
                     #getting saleId
@@ -232,15 +242,15 @@ def billing(request):
 
                     
                     
-
-                    
-                    messages.success(request, f'Transaction completed successfully! <a class="btn btn-success id="invoiceBtn" btn-sm" target="_blank" href="/sales/invoice/{sales_id}">Invoice#{sales_id}</a>')
-                    
                     calculated_data = {'total': total, 'vat': vat, 'netTotal': netTotal}
+                    
+                    messages.success(request, f'Billing Success! <br>Total ammount to pay: <b>{calculated_data['netTotal']}TK</b><br><br><a class="btn btn-warning btn-md" id="invoiceBtn" btn-sm" target="_blank" href="/sales/invoice/{sales_id}">Check Invoice</a> for details.')
+                    
+                    
                     
 
                 except ValueError:
-                    messages.error(request, "Invalid VAT percentage!")
+                    messages.error(request, "Invalid Informations!")
             else:
                 messages.error(request, "All billing details are required")
         
@@ -249,6 +259,7 @@ def billing(request):
         "scanned_items": scanned_items,
         "calculated_data": calculated_data,
     })
+    
 @login_required
 def invoice(request, sales_id):
     if request.method == "GET":
@@ -263,11 +274,14 @@ def invoice(request, sales_id):
 @login_required
 def sales_record(request):
     # Fetch sales records with related sales items (avoiding multiple DB queries)
-    sales_records = (
-        SalesRecord.objects.prefetch_related("items")
-        .order_by("-sale_date")  # Latest sales first
-    )
-
+    # different records for different user
+    logged_in_user = request.user
+    if logged_in_user.is_superuser:
+        sales_records = (SalesRecord.objects.prefetch_related("items").order_by("-sale_date"))        
+    else:
+        sales_records = (SalesRecord.objects.prefetch_related("items").filter(user__id=logged_in_user.id).order_by("-sale_date"))
+    
+   
     paginator = Paginator(sales_records,10)
 
     sales_details_from_date = None
@@ -275,13 +289,14 @@ def sales_record(request):
     today = date.today()
    
     total_sales_value = (
-        SalesRecord.objects.aggregate(total=Sum("netTotal"))["total"] or 0
-    )
-    total_sales_count = SalesRecord.objects.count()
-    todays_total_sales_value = (SalesRecord.objects.filter(sale_date__date=today).aggregate(total=Sum("netTotal"))["total"]or 0)
+        sales_records.aggregate(total=Sum("netTotal"))["total"] or 0
+    ) #total value of sales
+    total_sales_count = sales_records.count() #total number of sales
+    
+    todays_total_sales_value = (sales_records.filter(sale_date__date=today).aggregate(total=Sum("netTotal"))["total"]or 0)
     #todays_total_sales_value = "{:.2f}".format(todays_total_sales_value)
     
-    todays_sales_count = SalesRecord.objects.filter(sale_date__date=today).count()
+    todays_sales_count = sales_records.filter(sale_date__date=today).count()
 
     filtered_records = None
     messages_storage = messages.get_messages(request)
@@ -292,7 +307,7 @@ def sales_record(request):
         if form_type == "query_by_sales_date_form":
             query_date = request.GET.get("query_date")
             if query_date:
-                filtered_records = SalesRecord.objects.filter(sale_date__date=query_date)
+                filtered_records = sales_records.filter(sale_date__date=query_date)
                 if filtered_records.exists():
                     sales_count_from_date = filtered_records.count()
                     sales_details_from_date = filtered_records

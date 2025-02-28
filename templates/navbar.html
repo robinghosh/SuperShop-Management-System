@@ -1,7 +1,7 @@
 {% load static %}
-<nav class="navbar navbar-expand-lg navbar-custom bg-active">
+<nav class="navbar w-100 navbar-expand-lg navbar-custom bg-active">
     <div class="container-fluid">
-      <a class="navbar-brand" href="{% url 'home' %}"><img class="img-fluid" src="{% static 'images/ssms_logo.png' %}" style='width: 50px; height: auto;' alt="Super Shop Management System">SSMS</a>
+      <a class="navbar-brand" href="{% url 'home' %}"><img class="img-fluid" src="{% static 'images/ssms_logo.png' %}" style='width: 40px; height: auto;' alt="Super Shop Management System">Super Shop MS</a>
       <button
         class="navbar-toggler bg-light justify-content-center"
         type="button"
@@ -35,9 +35,13 @@
                     </li>
                 {% endif %}
             <!--Show the username-->
-            <li class="nav-item m-1">
+            <li class="nav-item m-1 ">
+                <div class="d-flex align-items-center mx-auto justify-content-center">
+                    <span class="material-icons text-light me-1">account_circle</span>
+                    <p class="text-light h3">{{ user.username }}</p>                    
+                </div>
                 
-                <p class="text-light h3 ms-1"> <span class="material-icons text-light">person</span>{{ user.username }}</p>
+                
             </li>
             <li class="nav-item m-1 me-0">
                 <form method="post" action="{% url 'logout' %}">
