@@ -13,7 +13,7 @@ from django.contrib import messages
 from django.urls import reverse
 from django.core.paginator import Paginator
 from django.db.models import Sum
-from datetime import date
+from datetime import date, datetime, timedelta
 import uuid
 from decimal import Decimal
 
@@ -36,12 +36,35 @@ class CustomLoginView(LoginView):
 #Dashboard View
 @login_required
 def dashboard(request):
-    username = request.user.username
+    logged_in_user = request.user
     
-    context = {
+    
+    
+    if logged_in_user.is_superuser:
+        sales_record = SalesRecord.objects.all()
+        today = datetime.today()
+        last_seven_days = []
+        total_last_seven_days = []
         
-    }
-    return render(request, "dashboard.html", {"username":username})
+       
+        for day in range(7):
+            days = today - timedelta(day)
+            last_seven_days.append(days.strftime('%Y-%m-%d'))
+            
+        for days in range(len(last_seven_days)):            
+            filtered_record = sales_record.filter(sale_date__date=last_seven_days[days])
+            sales_value_of_day = float(filtered_record.aggregate(total=Sum("netTotal"))["total"] or 0)
+            total_last_seven_days.append(sales_value_of_day)
+            
+        sum_last_seven_days_value = sum(total_last_seven_days)
+        
+        context = {
+            'last_seven_days': last_seven_days,
+            'total_last_seven_days': total_last_seven_days,
+            'sum_last_seven_days_value': sum_last_seven_days_value,
+        }
+        return render(request, "dashboard.html", context)
+    return render(request, "dashboard.html",)
 
 
 #products View
@@ -109,7 +132,6 @@ def products(request):
 
 @login_required
 def delete_item(request, productId):
-   
     if request.method == "POST":
         item = get_object_or_404(Inventory, productId=productId)
         item.delete()
@@ -120,13 +142,13 @@ def delete_item(request, productId):
 @login_required
 def edit_item(request, productId):
     logged_in_user = request.user
+    
     products = get_object_or_404(Inventory, productId=productId)
     if request.method == "POST":
         updated_name = request.POST.get('updated_name')
         updated_barcode = request.POST.get('updated_barcode')
         updated_price = request.POST.get('updated_price')
         updated_stock = request.POST.get('updated_stock')
-        updated_by = logged_in_user.username
         
         if updated_name and updated_barcode and updated_price and updated_stock:
             try:

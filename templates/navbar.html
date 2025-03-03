@@ -17,6 +17,9 @@
         <ul class="navbar-nav ms-auto text-center">
             {% if user.is_authenticated %} <!--Show Navbar only if the user is logged in-->
             <li class="nav-item m-1">
+                <a class="nav-link px-3" href="{% url "dashboard" %}">Dashboard</a>
+            </li>
+            <li class="nav-item m-1">
                 <a class="nav-link px-3" href="{% url "billing" %}">Billing</a>
             </li>
             <li class="nav-item m-1">
