@@ -94,24 +94,6 @@
                 </tr>
             </thead>
             <tbody>
-                {% comment %} {% if page_obj.object_list %}
-                {% for record in page_obj.object_list %}
-                    <tr>
-                        <td>{{ record.salesId }}</td>
-                        <td> +880{{ record.customer.customerPhone }}</td>
-                        <td>{% for item in record.items.all  %}{{ forloop.counter }}. {{item.productName}} - QTY: {{item.quantity}}<hr>{% endfor %}</td>
-                                    
-                        <td>{% for item in record.items.all  %} {{item.subtotal}}<hr>{% endfor %}</td>
-                        
-                        
-                        <td>{{ record.vatAmmount }}({{ record.vat }}%)</td>
-                        <td>{{ record.discountAmmount }}({{ record.discount }}%)</td>
-                        <td>{{ record.netTotal }}</td>
-                        <td>{{ record.sale_date|date:" j F, Y g:i A" }}</td>
-                        <td><a href="{% url 'invoice' record.salesId %}" target="_blank" rel="noopener noreferrer"><span class="material-icons">receipt</span></a></td>
-                    </tr>        
-                {% endfor %}
-                {% else %} {% endcomment %}
                 {% for record in page_obj.object_list %}
                 
                     <tr class="" id="salesTable">
@@ -137,7 +119,6 @@
                         <td colspan="9" class="text-center">No records found</td>
                     </tr>
                 {% endfor %}
-                {% comment %} {% endif %} {% endcomment %}
                 
             </tbody>
         </table>
@@ -148,23 +129,29 @@
         <ul class="pagination justify-content-center">
             {% if page_obj.has_previous %}
                 <li class="page-item">
-                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                        Previous
+                    </a>
                 </li>
             {% else %}
                 <li class="page-item disabled">
                     <a class="page-link">Previous</a>
                 </li>
             {% endif %}
-
+    
             {% for num in page_obj.paginator.page_range %}
                 <li class="page-item {% if page_obj.number == num %}active{% endif %}">
-                    <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                    <a class="page-link" href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                        {{ num }}
+                    </a>
                 </li>
             {% endfor %}
-
+    
             {% if page_obj.has_next %}
                 <li class="page-item">
-                    <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                        Next
+                    </a>
                 </li>
             {% else %}
                 <li class="page-item disabled">
@@ -173,6 +160,7 @@
             {% endif %}
         </ul>
     </nav>
+    
 </div>
 
 <script>

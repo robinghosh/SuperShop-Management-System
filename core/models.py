@@ -2,22 +2,34 @@ from django.db import models
 from decimal import Decimal
 from django.contrib.auth.models import User
 
+def get_default_user():
+    return User.objects.get(username='admin')
+
 class Inventory(models.Model):
     productId = models.AutoField(primary_key=True)
     productName = models.CharField(max_length=255)
     barcode = models.CharField(max_length=255, unique=True)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     stock = models.IntegerField(default=0)
+    createdBy = models.CharField(max_length=255, blank=True, null=True)
     created = models.DateTimeField(auto_now_add=True)
+    updatedBy = models.CharField(max_length=255, blank=True, null=True)
     updated = models.DateTimeField(auto_now=True)
     
+    def save(self, *args, **kwargs):
+        # When saving, we set the current user's username for createdBy and updatedBy fields
+        if not self.createdBy:  # Ensure createdBy is set only once, not overwritten
+            self.createdBy = str(self.createdBy or 'admin')
+        self.updatedBy = str(self.updatedBy or 'admin')
+        super().save(*args, **kwargs)
+        
     def update_stock(barcode, quantity):
         product = Inventory.objects.get(barcode=barcode)
         product.stock -= quantity
         product.save()
 
     def __str__(self):
-        return f"{self.outlet.outletName} - {self.productId}, Name: {self.productName}, Barcode: {self.barcode}, Price: {self.price}"
+        return f"{self.productId}, Name: {self.productName}, Barcode: {self.barcode}, Price: {self.price}"
     
 class Customer(models.Model):
     customerPhone = models.BigIntegerField(primary_key=True)  # Unique customer identifier

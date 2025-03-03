@@ -1,16 +1,16 @@
 {% extends "master.html" %}
 
-{% block title %}Sales Records{% endblock %}
+{% block title %}Sales Records - SSMS{% endblock %}
 
 {% block content %}
 <div class="container mt-4 p-4 bg-light shadow rounded">
-    <h2 class="text-center text-primary">Customers</h2>
-    <table class="table table-bordered table-responsive-md">
+    <h2 class="text-center text-primary mb-2">Customer List</h2>
+    <table class="table table-bordered table-responsive-md text-center">
         <thead class="table-primary">
-            <tr class="fw-b text-primary h5">
+            <tr class="fw-b table-success h5">
                 <th>Customer Phone</th>
                 <th>Total Purchases</th>
-                <th>Total Value</th>
+                <th>Total Value(TK)</th>
             </tr>
         </thead>
         <tbody>
@@ -18,7 +18,7 @@
                 <tr>
                     <td>{{ record.customerPhone }}</td>
                     <td>{{ record.purchase_count }}</td>
-                    <td>{{ record.total_purchase_value }}</td>
+                    <td class="fw-bold">TK {{ record.total_purchase_value }}/-</td>
                 </tr>
             {% empty %}
                 <tr>
