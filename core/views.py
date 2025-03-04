@@ -347,51 +347,61 @@ def sales_record(request):
     
     todays_sales_count = sales_records.filter(sale_date__date=today).count()
 
-    filtered_records = None
+    filtered_records_by_date = None
+    filtered_records_for_customer = None
     messages_storage = messages.get_messages(request)
     messages_storage.used = True  # Clear previous messages
 
-    if request.method == "GET":
-        form_type = request.GET.get('form_type')
-        if form_type == "query_by_sales_date_form":
-            query_date = request.GET.get("query_date")
-            if query_date:
-                filtered_records = sales_records.filter(sale_date__date=query_date)
-                sales_count_from_date = filtered_records.count()
-                
-                if sales_count_from_date > 0:  # Only process if records exist
-                    sales_details_from_date = filtered_records
-                    total_sales_value_for_query_date = (
-                        filtered_records.aggregate(total=Sum("netTotal"))["total"] or 0
-                    )
-                    
-                    paginator = Paginator(filtered_records, 10)
-                    
-                    messages.success(
-                        request,
-                        f"Total sales: <b>{sales_count_from_date}</b> and Total value: <b>{total_sales_value_for_query_date:.2f} TK.</b>"
-                    )
-                else:
-                    messages.error(request, f"No sales records exist for {query_date}.")
-                    filtered_records = None  # Reset to prevent issues later
+        # Query Parameters
+    query_date = request.GET.get("query_date")
+    query_invoice = request.GET.get("query_invoice")
+    query_customer_phone = request.GET.get("query_customer_phone")
 
-        elif form_type == "query_by_id_form":
-            query_id = request.GET.get("query_id")
-            if query_id:
-                if SalesRecord.objects.filter(salesId=query_id).exists():
-                    return redirect(invoice, query_id)
-                messages.error(request, f"No record found for ID: {query_id}")
-            else:
-                messages.error(request, "Enter an ID first")
+    filtered_records = None  # Store the result of the selected search
+
+    if query_date:
+        filtered_records = sales_records.filter(sale_date__date=query_date)
+        sales_count_from_date = filtered_records.count()
+        total_sales_value_for_query_date = filtered_records.aggregate(total=Sum("netTotal"))["total"] or 0
+
+        if sales_count_from_date > 0:
+            messages.success(
+                request,
+                f"Sales Record for Date: {query_date} <br> Total sales: <b>{sales_count_from_date}</b> and Total value: <b>{total_sales_value_for_query_date:.2f} TK.</b>"
+            )
         else:
-            pass
+            messages.error(request, f"No sales records exist for Date: <b> {query_date}</b>.")
+            filtered_records = None  # Reset to prevent display issues later
+    elif query_invoice:
+        if sales_records.filter(salesId=query_invoice):
+            filtered_records = sales_records.filter(salesId=query_invoice)
+            messages.success(request, f"Invoice Number: {query_invoice}</b>")
+        else:
+            messages.error(request, f"No record found for Invoice Number: <b>{query_invoice}</b>")
 
-        
-    page_number = request.GET.get("page")
-    if filtered_records is not None:
-        page_obj = paginator.get_page(page_number)
+    
+
+    elif query_customer_phone:
+        filtered_records = sales_records.filter(customer__customerPhone=query_customer_phone)
+        sales_count_for_customer = filtered_records.count()
+        total_sales_value_for_customer = filtered_records.aggregate(total=Sum("netTotal"))["total"] or 0
+
+        if sales_count_for_customer > 0:
+            messages.success(
+                request,
+                f"Sales Record for Customer: {query_customer_phone} <br> Total Purchases: <b>{sales_count_for_customer}</b> and Total Value: <b>{total_sales_value_for_customer:.2f} TK.</b>"
+            )
+        else:
+            messages.error(request, f"No sales records exist for {query_customer_phone}.")
+            filtered_records = None  # Reset to prevent display issues later
+
     else:
-        page_obj = Paginator(sales_records, 10).get_page(page_number)
+        messages.error(request, "Fill at least one of the three fields to search.")
+
+    # Paginate only filtered records if search applied, else show all records
+    paginator = Paginator(filtered_records if filtered_records is not None else sales_records, 10)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
 
 
     
@@ -399,20 +409,18 @@ def sales_record(request):
     context = {
             "page_obj": page_obj,  # Unified sales records with items
             "total_sales_value": round(total_sales_value, 2),
-            "total_sales_count": total_sales_count,
-            "sales_details_from_date": sales_details_from_date,
+            "total_sales_count": total_sales_count,           
             "sales_count_from_date": sales_count_from_date,
             "todays_total_sales_value": "{:.2f}".format(todays_total_sales_value),
             "todays_sales_count": todays_sales_count,
             "today": today,
-            "filtered_records": filtered_records,
+            
           
     }
     return render(
         request,
         "sales.html",         
-        context,
-    )
+        context,)
 
 @login_required
 def customers(request):

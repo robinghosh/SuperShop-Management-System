@@ -1,6 +1,10 @@
 {% extends "master.html" %}
 
 {% block title %}Sales Records{% endblock %}
+{% block script %}
+<script>
+</script>       
+{% endblock script %}
 
 {% block content %}
 <div class="container mt-4 p-4 bg-light shadow rounded">
@@ -30,58 +34,67 @@
             </div>
         </div>
     
-        <!-- Search Section -->
-        <div class="row justify-content-center table-primary">
-            <div class="col-md-8 text-center">
-                <h3 class="text-primary">Search Records</h3>
-    
-                <div class="d-flex flex-column flex-md-row justify-content-center align-items-center gap-3">
-                    <!-- Search by Date -->
-                    <form method="GET" class="d-flex align-items-center">
-                        <input type="hidden" name="form_type" value="query_by_sales_date_form">
-                        <label class="h6 text-primary me-2">By Date:</label> 
-                        <input class="form-control rounded-3" type="date" name="query_date" id="query_date">
-                        <button type="submit" class="btn btn-primary btn-sm rounded-3 ms-2">Search</button>
-                    </form>
-    
-                    <p class="text-primary h6">or</p>
-    
-                    <!-- Search by Invoice -->
-                    <form method="GET" class="d-flex align-items-center">
-                        <input type="hidden" name="form_type" value="query_by_id_form">
-                        <label class="h6 text-primary me-2">By Invoice #</label> 
-                        <input class="form-control rounded-3" id="query_id" name="query_id" type="text" placeholder="Invoice No.">
-                        <button type="submit" class="btn btn-primary btn-sm rounded-3 ms-2">Search</button>
-                    </form>
-                </div>
-                
-                <!-- Messages -->
-                <div class="mx-auto bg-light rounded-pill col-md-4 mt-4 mb-2 p-1 justify-content-center text-center">
-                    {% if messages %}
-                        {% for message in messages %}
-                            <ul class="fw-b list-unstyled h5">
-                                <li style="color: {% if message.tags == 'success' %}green{% else %}red{% endif %};">
-                                    {{ message|safe }}
-                                    
-                                </li>
-                            </ul>      
-                        {% endfor %}
-                    {% endif %}
-                </div>
-            </div>
-        </div>
+        
+    <!-- Messages -->
+    <div class="mx-auto bg-light rounded-pill col-md-4 mt-4 mb-2 p-1 justify-content-center text-center">
+        {% if messages %}
+            {% for message in messages %}
+                <ul class="fw-b list-unstyled h5">
+                    <li class="" style="color: {% if message.tags == 'success' %}green{% else %}red{% endif %};">
+                        {{ message|safe }}
+                        <button class="btn btn-sm"><a class="text-decoration-none" href="{% url "sales" %}"><span class="material-icons">close</span></a></button>
+                    </li>
+                  
+                </ul>      
+            {% endfor %}
+        {% endif %}
     </div>
     
-    
-    
+    <!-- Search Section -->
+    <div class="">
+        <button class="btn btn-primary mb-2" type="button" data-bs-toggle="collapse" data-bs-target="#searchSection" aria-expanded="false" aria-controls="searchSection">
+            Search
+            <span class="material-icons">search</span>
+        </button>
+        
+        <div class="collapse mb-5" id="searchSection">
+            <div class="card card-body col-sm-6 mx-auto w-100">
+                <div class="container-fluid w-50 align-center justify-content-center">
+                    <p class="h4 text-primary text-center ">Search Records By:</p>
+                    <p class="h6 text-primary text-center ">(Only one option can be chosen)</p>
+                    <form method="GET" class="text-primary align-center ">
+                        {% comment %} <input type="hidden" name="form_type" value="query_by_sales_date_form"> {% endcomment %}
+                        <label for="query_date"> Sales Date </label>                     
+                        <input class="form-control rounded-3 mb-2 search-input" type="date" name="query_date" id="query_date">
+
+                        <p class="text-center mb-1">OR</p>
+
+                        <label for="invoice"> Invoice No. </label>
+                        <input class="form-control rounded-3 mb-2 search-input" type="number" min="1" name="query_invoice" id="query_invoice" placeholder="Invoice #">
+
+                        <p class="text-center mb-1">OR</p>
+
+                        <label for="query_customer_phone"> Customer Phone No. </label>
+                        <div class="w-100 mb-2">
+                            <div class="form-control rounded-3 d-flex align-items-center">
+                                <span class="me-2">+880</span>
+                                <input type="tel" class="border-0 flex-grow-1 search-input" maxlength="11" minlength="10" id="query_customer_phone" name="query_customer_phone" placeholder="Customer Phone (e.g. 017xxxxxxxx)">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100 rounded-3">Search</button>
+                    </form>
+                </div>
+            </div>
+        </div>          
+    </div>
+
     <div class="table overflow-x-auto">
         <table class="table table-light table-group-divider table-bordered table-hover ">
             <thead>            
                 <tr class="text-center table-success justify-content-between align-middle h5">
                     <th>Invoice</th>
                     <th>Customer Phone</th>
-                    <th>Products</th>               
-                    <th>Subtotal</th>
+                    <th>Products</th>
                     <th>VAT(%)</th>
                     <th>Discount(%)</th>
                     <th>Total</th>
@@ -89,29 +102,36 @@
                     {% if user.is_superuser %}
                     <th>Counter</th>
                     {% endif %}                    
-                    <th>Sale Date & Time</th>
+                    <th>Date & Time</th>
                     <th class="table-info position-sticky end-0 me-0"><span class="material-icons">build</span></th>
                 </tr>
             </thead>
             <tbody>
                 {% for record in page_obj.object_list %}
                 
-                    <tr class="" id="salesTable">
+                    <tr class="align-middle" id="salesTable">
                         <td class="text-center">{{ record.salesId }}</td>
                         <td class="text-center"> +880{{ record.customer.customerPhone }}</td>
-                        <td><b>{% for item in record.items.all  %}{{ forloop.counter }}. {{item.productName}} - QTY: {{item.quantity}}{% if record.items.all|length == 1 %}{% else %}<hr>{% endif %}{% endfor %}</b></td>
+                        <td class="fw-semibold">
+                            {% for item in record.items.all  %}
+                                {{ forloop.counter }}. {{ item.productName }}<br>
+                                    <div class="d-flex justify-content-between fw-light gap-3">
+                                        <p class="fst-italic">QTY: {{ item.quantity }}</p>
+                                        <p>Subtotal: {{item.subtotal}}/-</p>
+                                    </div>                                  
+                                    {% if not forloop.last %}<hr>{% endif %}
+                            {% endfor %}
+                        </td>
 
-                        <td class="text-center">{% for item in record.items.all  %}{{item.subtotal}}/-<hr>{% endfor %}</td>                    
-                        
-                        <td class="text-center">(+) {{ record.vatAmmount }}/- ({{ record.vat }}%) </td>
-                        <td class="text-center">(-) {{ record.discountAmmount }}/- ({{ record.discount }}%)</td>
+                        <td class="text-center">(+){{ record.vatAmmount }}/-<br>({{ record.vat }}%) </td>
+                        <td class="text-center">(-){{ record.discountAmmount }}/-<br>({{ record.discount }}%)</td>
                         <td class="text-center"><b>{{ record.netTotal }}/-</b></td>
                         <td class="text-center">{{ record.paymentMethod.upper }}</td>
                         {% if user.is_superuser %}
                         <td class="text-center">{{ record.user.username }}</td>
                         {% endif %}
                         <td class="text-center">{{ record.sale_date|date:" j F, Y g:i A" }}</td>
-                        <td class="text-center table-info position-sticky end-0"><a class="link-style-none link-primary" href="{% url 'invoice' record.salesId%}" target="_blank" rel="noopener noreferrer" alt="invoice"><span class="material-icons">receipt</span></a></td>
+                        <td class="text-center position-sticky end-0"><a class="link-style-none link-success" href="{% url 'invoice' record.salesId%}" target="_blank" rel="noopener noreferrer" alt="Invoice" title="Invoice"><span class="material-icons">receipt</span></a></td>
                     </tr>
                                 
                 {% empty %}
@@ -166,7 +186,24 @@
 <script>
     {% comment %} const dateInput = document.getElementById("query_date");
     dateInput.valueAsDate = "2025-02-22"; {% endcomment %}
-    document.getElementById("query_date").value = "{{ today|date:"Y-m-d" }}";
-    
+    {% comment %} document.getElementById("query_date").value = "{{ today|date:"Y-m-d" }}"; {% endcomment %}
+    document.addEventListener("DOMContentLoaded", function () {
+        const inputs = document.querySelectorAll(".search-input");
+
+        inputs.forEach(input => {
+            input.addEventListener("input", function () {
+                inputs.forEach(otherInput => {
+                    if (otherInput !== input) {
+                        otherInput.disabled = this.value !== "";
+                    }
+                });
+            });
+        });
+    });
+    element.addEventListener("click", searchBtn);
+
+    function myFunction() {
+    document.getElementById("demo").innerHTML = "Hello World";
+    }
 </script>
 {% endblock %}

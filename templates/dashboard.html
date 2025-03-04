@@ -7,33 +7,35 @@
 {% block content %}
 <div class="d-flex align-items-center justify-content-center flex-column mb-0">
     <p class="h1 fw-bold text-primary text-center">Super Shop Management System</p>
-    <p class="h2 text-primary"><b>User :</b> {{user.username}}<p>
+    <p class="h2 text-secondary"><b>User :</b> @{{user.username}}<p>
 </div>
 {% if user.is_superuser %}
     <div class="d-flex align-items-center justify-content-center mb-5">
-        <div class="w-100 bg-light p-4 rounded shadow overflow-x-auto justify-content-center">
+        <div class="w-100 bg-light p-4 rounded shadow justify-content-center">
             <p class="h4 text-center text-primary">Last 7 Days Sales Report</p>
-            <table class="table table-bordered table-hover text-center table-light">
-                <tbody>
-                    <tr class="w-100">
-                        <th>Days</th>
-                        {% for days in last_seven_days %}
-                            <td class=>{{ days }}</td> 
-                        {% endfor %}
-                    </tr>
-                    <tr class="w-100 ">
-                        <th>Values</th>
-                        {% for value in  total_last_seven_days %}
-                            <td>৳{{ value }}</td>
-                        {% endfor %}
-                    </tr>
-                    <tr class="w-100 ">
-                        <th>Total</th>
-                        <td colspan="7" class="text-center fw-bold">৳{{ sum_last_seven_days_value }}</td>
-                    </tr>
-
-                </tbody>            
-            </table>
+            <div class="container-fluid overflow-x-auto ">
+                <table class="table table-bordered table-hover text-center table-light">
+                    <tbody>
+                        <tr class="w-100">
+                            <th>Days</th>
+                            {% for days in last_seven_days %}
+                                <td class=>{{ days }}</td> 
+                            {% endfor %}
+                        </tr>
+                        <tr class="w-100 ">
+                            <th>Values</th>
+                            {% for value in  total_last_seven_days %}
+                                <td>৳{{ value }}</td>
+                            {% endfor %}
+                        </tr>
+                        <tr class="w-100 ">
+                            <th>Total</th>
+                            <td colspan="7" class="text-center fw-bold">৳{{ sum_last_seven_days_value }}</td>
+                        </tr>
+    
+                    </tbody>            
+                </table>
+            </div>            
         </div>
     </div>
 {% endif %}
@@ -48,8 +50,7 @@
 
                     {% comment %} <img src="{% static "images/product_image.jpg" %}" class="card-img-top" alt="Card Image"> {% endcomment %}
                     
-                    <div class="card-body">
-                        
+                    <div class="card-body hover">                        
                         <h5 class="card-title text-primary">Products</h5>
                         <p class="card-text text-muted">Track all your procucts.</p>
                     </div>

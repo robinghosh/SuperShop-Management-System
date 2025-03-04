@@ -82,49 +82,51 @@
     
     <!-- Scanned Products Table -->
     {% if scanned_items %}
-    <div class="container mt-4 p-4 bg-light rounded shadow ">
+    <div class="container mt-4 p-4 bg-light rounded shadow">
         <h4 class="text-primary text-center">Scanned Products</h4>
-        <table class="table table-bordered text-center">
-            <thead>
-                <tr>
-                    <th>Product Name</th>
-                    <th>Barcode</th>
-                    <th>Price</th>
-                    <th>Quantity</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for item in scanned_items %}
-                <tr>
-                    <td>{{ item.productName }}</td>
-                    <td>{{ item.barcode }}</td>
-                    <td>{{ item.price }}</td>
-                    <td>
-                        {% with stock=0 %}
-                            {% for product in products %} 
-                                {% if product.barcode == item.barcode %}
-                                    {% with stock=product.stock %}
-                                        <input type="number" class="form-control" name="quantities" value="{{ item.quantity }}" min="1" max="{{stock}}" step="1" required> 
-                                    {% endwith %}
-                                {% endif %}
-                            {% endfor %}                        
-                        {% endwith %}
-                    </td>                  
-                    <td>
-                        <form method="POST">
-                            {% csrf_token %}
-                            <div class="d-flex form-group col-md-6 mx-auto">
-                                <input type="hidden" name="form_type" value="form3">
-                                <input type="hidden" class="form-control" name="removeBarcode" value="{{ item.barcode }}">
-                                <button class="btn btn-primary ms-2" type="submit"><span class="material-icons">delete</span></button>
-                            </div>
-                        </form>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <div class="container-fluid overflow-x-auto">
+            <table class="table table-bordered text-center">
+                <thead>
+                    <tr>
+                        <th>Product Name</th>
+                        <th>Barcode</th>
+                        <th>Price</th>
+                        <th>Quantity</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in scanned_items %}
+                    <tr>
+                        <td>{{ item.productName }}</td>
+                        <td>{{ item.barcode }}</td>
+                        <td>{{ item.price }}</td>
+                        <td>
+                            {% with stock=0 %}
+                                {% for product in products %} 
+                                    {% if product.barcode == item.barcode %}
+                                        {% with stock=product.stock %}
+                                            <input type="number" class="form-control" name="quantities" value="{{ item.quantity }}" min="1" max="{{stock}}" step="1" required> 
+                                        {% endwith %}
+                                    {% endif %}
+                                {% endfor %}                        
+                            {% endwith %}
+                        </td>                  
+                        <td>
+                            <form method="POST">
+                                {% csrf_token %}
+                                <div class="d-flex form-group col-md-6 mx-auto">
+                                    <input type="hidden" name="form_type" value="form3">
+                                    <input type="hidden" class="form-control" name="removeBarcode" value="{{ item.barcode }}">
+                                    <button class="btn btn-primary ms-2" type="submit"><span class="material-icons">delete</span></button>
+                                </div>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
 
         <!-- Checkout Form -->
         <form method="POST">
