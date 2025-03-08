@@ -51,10 +51,10 @@
     </div>
     
     <!-- Search Section -->
-    <div class="">
-        <button class="btn btn-primary mb-2" type="button" data-bs-toggle="collapse" data-bs-target="#searchSection" aria-expanded="false" aria-controls="searchSection">
-            Search
-            <span class="material-icons">search</span>
+    <div class="d-flex flex-column  justify-content-center ">
+        <button class="btn btn-primary d-flex mb-2  justify-content-center " type="button" data-bs-toggle="collapse" data-bs-target="#searchSection" aria-expanded="false" aria-controls="searchSection">
+            <p class="h4">Search</p>
+            <span class="material-icons ">search</span>
         </button>
         
         <div class="collapse mb-5" id="searchSection">
@@ -97,7 +97,7 @@
                     <th>Products</th>
                     <th>VAT(%)</th>
                     <th>Discount(%)</th>
-                    <th>Total</th>
+                    <th>Net Total</th>
                     <th>Payment Method</th>
                     {% if user.is_superuser %}
                     <th>Counter</th>
@@ -115,7 +115,8 @@
                         <td class="fw-semibold">
                             {% for item in record.items.all  %}
                                 {{ forloop.counter }}. {{ item.productName }}<br>
-                                    <div class="d-flex justify-content-between fw-light gap-3">
+                                    <div class="d-flex justify-content-between fw-light gap-5">
+                                        <p class="fst-italic">Price: {{ item.price }}</p>
                                         <p class="fst-italic">QTY: {{ item.quantity }}</p>
                                         <p>Subtotal: {{item.subtotal}}/-</p>
                                     </div>                                  

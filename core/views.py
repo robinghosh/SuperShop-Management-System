@@ -220,34 +220,55 @@ def billing(request):
             else:
                 messages.error(request, "Enter a Barcode first")
         elif form_type == "form3":
-            removeBarcode = request.POST.get('removeBarcode')   
             try:
-                for i in scanned_items:
-                    if i["barcode"] == removeBarcode:
-                        scanned_items.remove(i)
-                        request.session['scanned_items'] = scanned_items               
-            except:
-                messages.error(request, "Can not remove item")
+                del request.session['scanned_items']  
+            except KeyError:
+                pass
+            return redirect('billing')
+            
 
-        elif form_type == 'form2':  # Checkout processing
+        elif form_type == 'form2':  # Update quantities and process order
+            barcodes = request.POST.getlist('barcodes')
+            quantities = request.POST.getlist('quantities')
             vatPercent = request.POST.get('vatPercent')
             discountPercent = request.POST.get('discountPercent')
             customerPhone = request.POST.get('customerPhone')
             paymentMethod = request.POST.get('paymentMethod')
-            if scanned_items and vatPercent and customerPhone and paymentMethod:
-                try:
-                    vatPercent = Decimal(vatPercent)
-                    discountPercent = Decimal(discountPercent)
-                    customerPhone = int(customerPhone)
+
+            if vatPercent and discountPercent and customerPhone and paymentMethod:
+                # Ensure barcodes and quantities lists are of the same length
+                if len(barcodes) != len(quantities):
+                    messages.error(request, "Invalid form submission: barcodes and quantities do not match.")
+                    return redirect('billing')
+
+                # Update quantities in the session
+                for i, barcode in enumerate(barcodes):
+                    for item in scanned_items:
+                        if item['barcode'] == barcode:
+                            if int(quantities[i]) == 0:
+                                scanned_items.remove(item)
+                                request.session['scanned_items'] = scanned_items
+                            else:
+                                item['quantity'] = int(quantities[i])
+                                break
+                if scanned_items:
+                    request.session['scanned_items'] = scanned_items
+                    request.session.modified = True
+                    # Validate quantities against stock
+                    for item in scanned_items:
+                        product = Inventory.objects.get(barcode=item['barcode'])
+                        if item['quantity'] > product.stock:
+                            messages.error(request, f"Cannot set quantity of {item['productName']} more than available stock ({product.stock})")
+                            return redirect('billing')
+
+                    # Process the order
                     total = sum(Decimal(item['price']) * item['quantity'] for item in scanned_items)
-                    vat = (total * vatPercent) / 100
-                    discount = (total * discountPercent) / 100
+                    vat = (total * Decimal(vatPercent)) / 100
+                    discount = (total * Decimal(discountPercent)) / 100
                     netTotal = total + vat - discount
 
-                    # Get or create customer
+                    # Create customer and sales record
                     customer, _ = Customer.objects.get_or_create(customerPhone=customerPhone)
-                    
-                    # Create a single sales record for the transaction
                     sale = SalesRecord.objects.create(
                         customer=customer,
                         user=user,
@@ -258,13 +279,8 @@ def billing(request):
                         netTotal=netTotal,
                         paymentMethod=paymentMethod,
                     )
-                    
-                    sale.update_totals(net_total=netTotal) #finalizing
 
-                    #getting saleId
-                    sales_id = sale.salesId
-                   
-                    # Save each scanned product as a SalesItem
+                    # Create sales items
                     for item in scanned_items:
                         SalesItem.objects.create(
                             sale=sale,
@@ -274,35 +290,22 @@ def billing(request):
                             quantity=item['quantity']
                         )
 
-                    # Clear session after successful checkout
+                    # Update stock
+                    for item in scanned_items:
+                        product = Inventory.objects.get(barcode=item['barcode'])
+                        product.stock -= item['quantity']
+                        product.save()
+
+                    # Clear session
                     request.session['scanned_items'] = []
+                    request.session.modified = True
 
-                    #Update stock of products after every sale
-                    sales_item_for_sale = SalesItem.objects.filter(sale=sale)
-                    
-                    for items in sales_item_for_sale:
-                        quantity = int(items.quantity)
-                        barcode = items.barcode
-                        Inventory.update_stock(barcode, quantity)                  
-                     
-                    
-                    # Update customer purchase history
-                    customer.update_customer_data(customerPhone, netTotal)
-
-                    
-                    
-                    calculated_data = {'total': total, 'vat': vat, 'netTotal': netTotal}
-                    
-                    messages.success(request, f'Billing Success! <br>Total ammount to pay: <b>{calculated_data['netTotal']}TK</b><br><br><a class="btn btn-warning btn-md" id="invoiceBtn" btn-sm" target="_blank" href="/sales/invoice/{sales_id}">Check Invoice</a> for details.')
-                    
-                    
-                    
-
-                except ValueError:
-                    messages.error(request, "Invalid Informations!")
+                    messages.success(request, f'Billing Success! <br>Total amount to pay: <b>{netTotal}TK</b><br><br><a class="btn btn-warning btn-md" id="invoiceBtn" target="_blank" href="/sales/invoice/{sale.salesId}">Check Invoice</a> for details.')
+                else:
+                    messages.error(request, "Billing failed due to '0' quantity.")
             else:
-                messages.error(request, "All billing details are required")
-        
+                messages.error(request, f"Fill all data correctly!!")
+            
     return render(request, 'billing.html', {
         "products": products,
         "scanned_items": scanned_items,
@@ -325,6 +328,7 @@ def sales_record(request):
     # Fetch sales records with related sales items (avoiding multiple DB queries)
     # different records for different user
     logged_in_user = request.user
+    print(dir(request.session))
     if logged_in_user.is_superuser:
         sales_records = (SalesRecord.objects.prefetch_related("items").order_by("-sale_date"))        
     else:
@@ -372,14 +376,13 @@ def sales_record(request):
         else:
             messages.error(request, f"No sales records exist for Date: <b> {query_date}</b>.")
             filtered_records = None  # Reset to prevent display issues later
+            
     elif query_invoice:
         if sales_records.filter(salesId=query_invoice):
             filtered_records = sales_records.filter(salesId=query_invoice)
             messages.success(request, f"Invoice Number: {query_invoice}</b>")
         else:
-            messages.error(request, f"No record found for Invoice Number: <b>{query_invoice}</b>")
-
-    
+            messages.error(request, f"No record found for Invoice Number: <b>{query_invoice}</b>")    
 
     elif query_customer_phone:
         filtered_records = sales_records.filter(customer__customerPhone=query_customer_phone)
@@ -389,15 +392,15 @@ def sales_record(request):
         if sales_count_for_customer > 0:
             messages.success(
                 request,
-                f"Sales Record for Customer: {query_customer_phone} <br> Total Purchases: <b>{sales_count_for_customer}</b> and Total Value: <b>{total_sales_value_for_customer:.2f} TK.</b>"
+                f"Sales Record for Customer: <b>{query_customer_phone}</b> <br> Total Purchases: <b>{sales_count_for_customer}</b> and Total Value: <b>{total_sales_value_for_customer:.2f} TK.</b>"
             )
         else:
-            messages.error(request, f"No sales records exist for {query_customer_phone}.")
+            messages.error(request, f"No sales records exist for <b>{query_customer_phone}</b>.")
             filtered_records = None  # Reset to prevent display issues later
 
     else:
-        messages.error(request, "Fill at least one of the three fields to search.")
-
+        pass
+        
     # Paginate only filtered records if search applied, else show all records
     paginator = Paginator(filtered_records if filtered_records is not None else sales_records, 10)
     page_number = request.GET.get("page")
