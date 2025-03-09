@@ -1,0 +1,25 @@
+{% if messages %}
+  {% for message in messages %}
+    <div class="toast-container posit position-fixed top-25 start-0 ">
+      <div class="toast show " role="akert" aria-live="assertive" aria-atomic="true" data-bs-delay="7000" >
+        <div class="toast-header">
+          <strong class="me-auto h4">{{ message.tags|title }}</strong>
+          <small>Now</small>
+          <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body h5 fw-bold {% if message.tags == 'success' %}text-success {% elif message.tags == 'info' %}text-info{% else %}text-danger{% endif %}">
+          {{ message|safe }}
+        </div>
+      </div>
+    </div>
+  {% endfor %}
+{% endif %}
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        let toastElList = [].slice.call(document.querySelectorAll('.toast'));
+        let toastList = toastElList.map(function (toastEl) {
+            return new bootstrap.Toast(toastEl).show();
+        });
+    });  
+</script>

@@ -1,0 +1,32 @@
+<div class="modal fade invoiceModal" id="invoiceModal" tabindex="-1" aria-labelledby="invoiceModalLabel" aria-hidden="true">                
+    <div class="modal-dialog modal-dialog-centered modal-fullscreen">
+        <div class="modal-content justify-content-center">
+            <div class="modal-header">
+                <h1 class="modal-title fs-1 text-primary" id="invoiceModalLabel">Invoice</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body justify-content-center">
+                <iframe class="w-100 h-100" id="invoiceFrame" src="" frameborder="0"></iframe>
+            </div>
+            <div class="modal-footer">
+                <button class=" btn btn-primary mb-2 " type="button"><a class="link-light text-decoration-none" id="invoiceLink" href="" target="_blank">Fullscren</a></button>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+       
+        let invoiceModal = document.getElementById("invoiceModal");
+        let invoiceFrame = document.getElementById("invoiceFrame");
+        let invoiceLink = document.getElementById("invoiceLink");
+
+        document.querySelectorAll(".invoice-btn").forEach(button => {
+            button.addEventListener("click", function () {
+                let url = this.getAttribute("data-url");
+                invoiceFrame.src = url;  // Set the iframe URL dynamically
+                invoiceLink.href =url;
+            });
+        });
+    });
+</script>

@@ -27,6 +27,7 @@ SECRET_KEY = 'django-insecure-q!wkrcbzxd71f2k+l+g!a28x08t-8c!akv-#o=8qrvy$1&ueqc
 DEBUG = True
 
 ALLOWED_HOSTS = ['*']
+X_FRAME_OPTIONS = 'SAMEORIGIN'  # Allows iframes from the same domain only
 
 
 # Application definition

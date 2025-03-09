@@ -4,26 +4,26 @@
 
 {% block content %}
     {% if products %}
-        <div class="d-flex align-items-center justify-content-center" style="min-height: 70vh;">
-            <div style="max-width: 50%; width: 100%; background: #f8f9fa; padding: 20px; border-radius: 10px; box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);">
-                <h3 class="mb-4 text-center">Update Details of: <b>{{ products.productName }}</b></h3>
+        <div class="container d-flex justify-content-center text-center ">
+            <div class="form mt-4 p-4 bg-body w-75 shadow-lg rounded">
+                <h3 class="mb-4 text-primary ">Update Product <br> <b>"{{ products.productName }}"</b></h3>
                 
                 <form method="post" onsubmit="return confirm('Confirm Updated Details?');">
                     {% csrf_token %}
                     <div class="mb-3">
-                        <input class="form-control" type="text" id="name" placeholder="Product Name" name="updated_name" value="{{ products.productName }}" />
+                        <input class="form-control" type="text" id="name" placeholder="Product Name" name="updated_name" value="{{ products.productName }}" title="Product Name"/>
                     </div>
                     <div class="mb-3">
-                        <input class="form-control" type="text" id="barcode" placeholder="Barcode" name="updated_barcode" value="{{ products.barcode }}" />
+                        <input class="form-control" type="text" id="barcode" placeholder="Barcode" name="updated_barcode" value="{{ products.barcode }}" title="Product Barcode"/>
                     </div>
                     <div class="mb-3">
-                        <input class="form-control" type="text" id="price" placeholder="Price" name="updated_price" value="{{ products.price }}" />
+                        <input class="form-control" type="text" id="price" placeholder="Price" name="updated_price" value="{{ products.price }}" title="Price"/>
                     </div>
                     <div class="mb-3">
-                        <input class="form-control" type="text" id="Stock" placeholder="Stock" name="updated_stock" value="{{ products.stock }}" />
+                        <input class="form-control" type="text" id="stock" placeholder="Stock" name="updated_stock" value="{{ products.stock }}" title="Stock"/>
                     </div>
                     <div class="mb-3 text-center">
-                        <button class="btn btn-primary" type="submit" style="width: 15vw;">Update</button>
+                        <button class="btn btn-primary" type="submit" title="Update Product">Update</button>
                     </div>
                 </form>
             </div>

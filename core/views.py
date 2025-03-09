@@ -77,14 +77,21 @@ def products(request):
     if request.method == 'GET':
         form_type = request.GET.get('form_type')
         if form_type == "search_product":
-            query_name = request.GET.get('query_name').strip()
+            query_name = request.GET.get('query_name')
             query_barcode = request.GET.get('query_barcode')
             if query_name:
+                query_name = query_name.strip()
                 products = Inventory.objects.filter(productName__icontains=query_name)
                 paginator = Paginator(products, 10)
+                messages.info(request, f"Found {products.count()} products by the keyword '{query_name}'")
             elif query_barcode:
                 products = Inventory.objects.filter(barcode=query_barcode)
                 paginator = Paginator(products, 10)
+                if products.exists():
+                    product_names = ", ".join([product.productName for product in products])
+                    messages.info(request, f"Found product: '{product_names}' for Barcode: '{query_barcode}'")
+                else:
+                    messages.info(request, f"No product found for Barcode: '{query_barcode}'")
             elif query_barcode and query_name:
                 products = Inventory.objects.filter(barcode=query_barcode)
                 paginator = Paginator(products, 10)
@@ -299,10 +306,12 @@ def billing(request):
                     # Clear session
                     request.session['scanned_items'] = []
                     request.session.modified = True
-
-                    messages.success(request, f'Billing Success! <br>Total amount to pay: <b>{netTotal}TK</b><br><br><a class="btn btn-warning btn-md" id="invoiceBtn" target="_blank" href="/sales/invoice/{sale.salesId}">Check Invoice</a> for details.')
+                    invoice_url = reverse('invoice', args=[sale.salesId])  # Get invoice URL
+                    message_html = f"""Billing Success! <br>Total amount to pay: <b>{netTotal} TK</b><br><br><button type="button" class="btn btn-success btn-sm invoice-btn" id="invoiceBtn" data-bs-toggle="modal" data-bs-target="#invoiceModal" data-url="{invoice_url}" title="Invoice">Invoice</button> for details."""
+                    messages.success(request, message_html)
+                 
                 else:
-                    messages.error(request, "Billing failed due to '0' quantity.")
+                    messages.error(request, "Quantity can't be zero!!")
             else:
                 messages.error(request, f"Fill all data correctly!!")
             
@@ -382,7 +391,7 @@ def sales_record(request):
             filtered_records = sales_records.filter(salesId=query_invoice)
             messages.success(request, f"Invoice Number: {query_invoice}</b>")
         else:
-            messages.error(request, f"No record found for Invoice Number: <b>{query_invoice}</b>")    
+            messages.error(request, f"No record found for Invoice #<b>{query_invoice}</b>")    
 
     elif query_customer_phone:
         filtered_records = sales_records.filter(customer__customerPhone=query_customer_phone)
@@ -398,8 +407,7 @@ def sales_record(request):
             messages.error(request, f"No sales records exist for <b>{query_customer_phone}</b>.")
             filtered_records = None  # Reset to prevent display issues later
 
-    else:
-        pass
+    
         
     # Paginate only filtered records if search applied, else show all records
     paginator = Paginator(filtered_records if filtered_records is not None else sales_records, 10)
