@@ -20,7 +20,7 @@ urlpatterns = [
     path('products/', views.products, name="products"),
     path("delete/<int:productId>/", views.delete_item, name="delete_item"),
     path("products/edit/<int:productId>/", views.edit_item, name="edit_item"),
-    
+    path("products/custom_barcodes/", views.custom_barcodes, name="custom_barcodes"),
 
     
 ]

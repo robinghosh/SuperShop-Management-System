@@ -1,5 +1,22 @@
 {% extends "master.html" %} 
-{% block title %} Products - Super Shop Management System{% endblock %} 
+{% block title %} Products - Super Shop Management System{% endblock %}
+
+{% block script %}
+    <script>
+        
+        function fillCustomBarcode(){
+            let customBarcodeBtn = document.querySelector("#customBarcodeBtn")
+            let barcodeInput = document.getElementById("barcode");
+
+            let customBarcode = customBarcodeBtn.dataset.barcode
+            
+            barcodeInput.value = customBarcode || "";
+        }       
+        
+
+    </script>
+{% endblock script %}
+
 {% block content %}
 <!--Error Messages-->
 {% include "messages.html" %}
@@ -13,12 +30,18 @@
     <!-- Action Section -->
     <div class="d-flex flex-column  justify-content-center mt-4 mb-2 w-100">
         <div class="d-flex justify-content-between w-100">
-            <button class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#searchSection" aria-expanded="false" aria-controls="searchSection" title="Search Product(s)"> 
-                <span class="material-icons">search</span>
+            <button class="btn btn-primary d-flex align-items-center" type="button" data-bs-toggle="collapse" data-bs-target="#searchSection" aria-expanded="false" aria-controls="searchSection" title="Search Product(s)"> 
+                Search Records  <span class="material-symbols-outlined">search</span>
             </button>
-            <button id="addproduct" type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addProductModal" title="Add Product">
-                <span class="material-icons">add</span>
-            </button>
+            <div class="d-flex gap-1">
+                <button id="barcodes" type="button" class="btn btn-md btn-primary d-flex align-items-center " title="Custom Barcodes">
+                    <a class="text-decoration-none link-light" href="{% url 'custom_barcodes' %}" target="_blank"><span class="material-symbols-outlined">barcode</span></a>
+                </button>
+                <button id="addproduct" type="button" class="btn btn-primary d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#addProductModal" title="Add Product">
+                    <span class="material-symbols-outlined">add_circle</span>
+                </button>
+            </div>
+            
         </div>
         <!--Search Section Collapse-->
         <div class="collapse mb-4 mt-2" id="searchSection">
@@ -42,7 +65,7 @@
 
         <!--Product add modal-->
         <div class="modal fade addProductModal" id="addProductModal" tabindex="-1" aria-labelledby="addProductModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h1 class="modal-title fs-5" id="addProductModalLabel">Enter New Product Details</h1>
@@ -57,18 +80,33 @@
                         {% csrf_token %}
                             <div class="modal-body mb-2">
                                 <input type="hidden" name="form_type" value="add_product">
+                                
                                 <div class="row d-flex flex-column w-100 justify-content-center mx-auto gap-2 mb-2">
+                                    <div class="col text-center ">
+                                        
+                                        <p class="d-flex justify-content-around form-control mb-0">
+                                            
+                                            <input class="form-control-plaintext border-0 p-0 m-0" type="text" id="barcode" placeholder="Enter Product Barcode or Generate Barcode" name="barcode" title="Enter Product Barcode or Generate Barcode" autocomplete="off" required autofocus/>
+                                            <button class="btn btn-primary btn-sm border " type="button" id="customBarcodeBtn" data-barcode="{{ empty_barcodes.barcodes }}" onclick="fillCustomBarcode()" title="Generate Barcode">Generate</button>
+
+                                            {% comment %} <select class="form-control w-25 text-success" name="custom_barcodes" id="custom_barcodes" onchange="fillCustomBarcode()">
+                                                <option disabled selected>Custom Barcodes</option>                                            
+                                                {% if empty_barcodes %}
+                                                    <option data-barcode="{{ empty_barcodes.barcodes }}">{{ empty_barcodes.barcodes }}</option>
+                                                {% endif %}
+                                            </select> {% endcomment %}
+                                        </p>
+                                    </div>
                                     <div class="col text-center">
-                                        <input class="form-control" type="text" id="name" placeholder="Product Name" name="name"/>
+                                        <input class="form-control" type="text" id="name" placeholder="Product Name" name="name" required/>
+                                    </div>
+                                
+                                    
+                                    <div class="col">
+                                        <input class="form-control" type="text" id="price" placeholder="Price" name="price" required/>
                                     </div>
                                     <div class="col">
-                                        <input class="form-control" type="text" id="barcode" placeholder="Barcode" name="barcode"/>
-                                    </div>
-                                    <div class="col">
-                                        <input class="form-control" type="text" id="price" placeholder="Price" name="price"/>
-                                    </div>
-                                    <div class="col">
-                                        <input class="form-control" type="text" id="stock" placeholder="Stock" name="stock"/>
+                                        <input class="form-control" type="text" id="stock" placeholder="Stock" name="stock" required/>
                                     </div>
                             </div>
                             <div class="modal-footer justify-content-center">                                    
@@ -197,13 +235,25 @@
   </div>
 </div>
 <script>
+    window.onload = function () { 
+        document.getElementById("barcode").focus(); 
+    };
     document.addEventListener("DOMContentLoaded", function () {
         
         let editProductModal = document.getElementById("editProductModal");
         let editProductFrame = document.getElementById("editProductFrame");
         let editProductLink = document.getElementById("editProductLink");
         const inputs = document.querySelectorAll(".search-input");
-        
+        let modal = document.getElementById("addProductModal"); // Replace with your modal's actual ID
+        let barcodeInput = document.getElementById("barcode");
+    
+        if (modal) {
+            modal.addEventListener("shown.bs.modal", function () {
+                if (barcodeInput) {
+                    barcodeInput.focus();
+                }
+            });
+        }
         inputs.forEach(input => {
             input.addEventListener("input", function () {
                 inputs.forEach(otherInput => {

@@ -42,30 +42,27 @@
                
                 <input type="hidden" name="form_type" value="form1">
                 
-                <div class="form-group mb-2 text-center ">
-                    <label class="h4 text-primary" for="productSelect">Select Product</label>
-                    <select class="form-control" id="productSelect" name="productSelect" onchange="fillBarcode()">
-                        <option class="text-secondary fw-bold" selected="selected">Select Product</option><hr>
-                        {% for product in products %}
-                            {% if product.stock == 0 or product.stock < 0 %}
-                                <option data-barcode="{{ product.barcode }}" disabled>{{ product.productName }} (Out Of stock)</span></option><hr>
-                            {% else %}
-                                <option data-barcode="{{ product.barcode }}">{{ product.productName }} (In Stock: {{ product.stock }})</option><hr> 
-                            {% endif %}
-                            
-                        {% endfor %}                             
-                    </select>
-                </div>
-                <div class="form-group  text-center">
-                    <label class="h6 text-primary">OR</label>
-                </div>
                 <div class="form-group mb-2 text-center">
-                    <label class="h5 text-primary fw-b" for="barcodeInput">Enter Product's Barcode</label>
+                    <label class="h5 text-primary fw-b" for="barcodeInput">Enter Product's Barcode or Select Directly</label>
                     <div class="d-flex justify-content-center gap-2">
-                        <input type="text" class="form-control" id="barcodeInput" placeholder="Enter Barcode" name="barcode" autofocus>
-                        <button class="btn btn-primary w-50" id="addproductButton" type="submit" title="Add Product to Billing">Add</button>
+                        <p class="d-flex justify-content-around form-control">
+                            <input type="text" class="form-control-plaintext border-0 " id="barcodeInput" placeholder="Enter Barcode" name="barcode" autofocus>
+                            <select class="dropdown border-0 border-start w-25" id="productSelect" name="productSelect" onchange="fillBarcode()">
+                                <option class="text-secondary fw-bold" selected="selected" disabled>Products</option><hr>
+                                {% for product in products %}
+                                    {% if product.stock == 0 or product.stock < 0 %}
+                                        <option data-barcode="{{ product.barcode }}" disabled>{{ product.productName }} (Out Of stock)</span></option><hr>
+                                    {% else %}
+                                        <option data-barcode="{{ product.barcode }}">{{ product.productName }} (In Stock: {{ product.stock }})</option><hr> 
+                                    {% endif %}
+                                    
+                                {% endfor %}                             
+                            </select>
+                        </p>
+                        
+                        
                     </div>
-                    
+                    <button class="btn btn-primary w-25" id="addproductButton" type="submit" title="Add Product to Billing">Add</button>
                 </div>
 
                 
@@ -104,7 +101,9 @@
                                         {% if product.barcode == item.barcode %}
                                             {% with stock=product.stock %}
                                                 <input id="stock-input" name="stock" type="hidden" value="{{ stock }}">
-                                                <input type="number" class="form-control" name="quantities" value="{{ item.quantity }}" min="0" max="{{stock}}" step="1" required>
+                                                <span class="d-inline-block" tabindex="0" data-bs-toggle="popover" data-bs-trigger="hover focus" data-bs-content="Disabled popover">
+                                                    <input type="number" class="form-control" name="quantities" value="{{ item.quantity }}" min="0" max="{{stock}}" step="1" required>
+                                                </span>
                                                 <input type="hidden" name="barcodes" value="{{ item.barcode }}">
                                             {% endwith %}
                                         {% endif %}
@@ -159,7 +158,7 @@
             <div class="row mb-3">
                 <label for="customerPhone" class="col-sm-3 col-form-label text-end">Customer Phone:</label>
                 <div class="col-sm-9 input-box-customerPhone">
-                    <p class="form-control">+880 <input type="tel" class="border-0 w-75" maxlength="11" minlength="10" id="customerPhone" name="customerPhone" placeholder="Enter Customer Phone" required></p>                               
+                    <p class="form-control">+880 <input type="number" class="border-0 w-75" maxlength="11" minlength="10" id="customerPhone" name="customerPhone" placeholder="Enter Customer Phone" required></p>                               
                 </div>
             </div>
             

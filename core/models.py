@@ -5,6 +5,7 @@ from django.contrib.auth.models import User
 def get_default_user():
     return User.objects.get(username='admin')
 
+
 class Inventory(models.Model):
     productId = models.AutoField(primary_key=True)
     productName = models.CharField(max_length=255)
@@ -30,6 +31,14 @@ class Inventory(models.Model):
 
     def __str__(self):
         return f"{self.productId}, Name: {self.productName}, Barcode: {self.barcode}, Price: {self.price}"
+    
+class Barcodes(models.Model):
+    barcodes = models.CharField(max_length=255, unique=True)
+    product = models.CharField(max_length=255, null=True, blank=True)
+    is_assigned = models.BooleanField()
+    barcode_svg = models.TextField(max_length=1000, null=True, blank=True)
+    def __str__(self):
+        return f"{self.barcodes} - {self.product} - {self.is_assigned}"
     
 class Customer(models.Model):
     customerPhone = models.BigIntegerField(primary_key=True)  # Unique customer identifier

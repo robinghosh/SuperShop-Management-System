@@ -4,8 +4,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils.timezone import activate
 
 from django.contrib.auth.views import LoginView
-from django.contrib.auth.views import LogoutView
-from .models import Inventory, SalesRecord, Customer, SalesItem
+from .models import Inventory, Barcodes, SalesRecord, Customer, SalesItem
 
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
@@ -14,11 +13,11 @@ from django.urls import reverse
 from django.core.paginator import Paginator
 from django.db.models import Sum
 from datetime import date, datetime, timedelta
-import uuid
+
 from decimal import Decimal
-
-
-
+from io import BytesIO
+from barcode import Code39
+from barcode.writer import SVGWriter
 
 
 
@@ -72,8 +71,10 @@ def dashboard(request):
 def products(request):
     logged_in_user = request.user
     products = Inventory.objects.all()
+    empty_barcodes = Barcodes.objects.filter(is_assigned = False).first()
     paginator = Paginator(products, 10)
     # print(products.filter(productName="pran mama wafer biscuit".upper()))
+    #product searching logic
     if request.method == 'GET':
         form_type = request.GET.get('form_type')
         if form_type == "search_product":
@@ -97,8 +98,8 @@ def products(request):
                 paginator = Paginator(products, 10)
             else:
                 messages.error(request, f"Product Name or Barcode is empty!!")
-    elif request.method == 'POST':
-
+    #product adding logic
+    elif request.method == 'POST':        
         form_type = request.POST.get('form_type')
         if form_type == "add_product":        
             product_name = request.POST.get('name')
@@ -115,8 +116,20 @@ def products(request):
                     if Inventory.objects.filter(barcode=barcode).exists():
                         messages.error(request, "Product already exists!")
                     else:
+                        custom_barcodes = Barcodes.objects.filter(barcodes=barcode).first() #check if barcode exists
                         Inventory.objects.create(productName=product_name, barcode=barcode, price=price, stock=stock, createdBy=logged_in_user, updatedBy=logged_in_user) #This is the line 
                         messages.success(request, f"Product: {product_name} added successfully!")
+                        if custom_barcodes:
+                            rv = BytesIO()
+                            Code39(barcode, writer=SVGWriter(), add_checksum=False).write(rv)
+                            svg_data = rv.getvalue().decode("utf-8")
+                            
+                            cleaned_barcode = svg_data.replace("\r\n", "")
+                            custom_barcodes.product = product_name
+                            custom_barcodes.is_assigned = True
+                            custom_barcodes.barcode_svg = cleaned_barcode
+                            custom_barcodes.save()
+    
                 except ValueError:
                     messages.error(request, "Invalid price or barcode!")
             else:
@@ -134,8 +147,19 @@ def products(request):
     #New product_data entry form
 
 
-    
-    return render(request, "products.html", {'page_obj': page_obj})
+    context = {
+        'page_obj': page_obj,
+        'empty_barcodes': empty_barcodes,
+    }
+    return render(request, "products.html", context)
+
+@login_required
+def custom_barcodes(request):
+    custom_barcodes = Barcodes.objects.filter(is_assigned=True) 
+    paginator = Paginator(custom_barcodes, 10)
+    page_number = request.GET.get('page')  # Get the current page number from query params
+    barcode_page_obj = paginator.get_page(page_number)  # Get the specific page of records
+    return render(request, 'custom_barcodes.html', {'barcode_page_obj':barcode_page_obj})
 
 @login_required
 def delete_item(request, productId):
@@ -328,7 +352,7 @@ def invoice(request, sales_id):
         invoice_data = get_object_or_404(SalesRecord, salesId=sales_id)
         for item in invoice_data.items.all():
             total += item.subtotal
-        print(total)  
+       
     return render(request, 'invoices.html', {"invoice_data": invoice_data, "total":total,})
 
 
@@ -337,7 +361,7 @@ def sales_record(request):
     # Fetch sales records with related sales items (avoiding multiple DB queries)
     # different records for different user
     logged_in_user = request.user
-    print(dir(request.session))
+    
     if logged_in_user.is_superuser:
         sales_records = (SalesRecord.objects.prefetch_related("items").order_by("-sale_date"))        
     else:
@@ -465,3 +489,9 @@ def set_timezone(request):
         activate(timezone)  # Apply the new timezone
         return JsonResponse({"status": "success", "timezone": timezone})
     return JsonResponse({"status": "failed"}, status=400)
+
+
+    
+
+
+# Write to a file-like object:

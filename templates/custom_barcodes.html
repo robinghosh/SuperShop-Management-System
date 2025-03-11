@@ -1,0 +1,117 @@
+{% extends "master.html" %}
+{% block title %}Custom Barcodes{% endblock title %}
+{% block script %}
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        let barcodeSvg = document.getElementById("barcodeSvg")
+        document.querySelectorAll(".printBarcodeBtn").forEach(button => {
+            button.addEventListener("click", function () {
+                let barcodeSvgData = this.getAttribute("data-barcode")
+                let productName = this.getAttribute("data-product")
+                let printWindow = window.open('', '', 'height=1000, width=1000');
+                printWindow.document.open();
+                printWindow.document.write('<html><head><title>Print</title></head><body><table style="border: 1px solid;"><tr style="border: 1px solid;"><td style="border: 1px solid;"><h3>');
+                printWindow.document.write(productName);
+                printWindow.document.write('</h3></td></tr><tr style="border: 1px solid;"><td style="border: 1px solid;">');
+                printWindow.document.write(barcodeSvgData);
+                printWindow.document.write('</td></tr></table></body></html>');
+                printWindow.document.close();
+                printWindow.print();
+            });
+        }); 
+    });
+</script>
+{% endblock script %}
+{% block content %}
+<div class="container text-center">
+    <div class="container mt-4 p-4 bg-body shadow-lg rounded">
+        <div class="d-flex justify-content-center p-3 mb-2">
+            <h1 class="text-primary text-center">Custom Barcodes</h1>     
+        </div>
+        <div class="table overflow-x-auto">
+            <table class="table table-bordered table-responsive  justify-content-center">
+                <thead class="table-success align-middle">
+                    <tr class="h5">
+                        <th>Barcode</th>
+                        <th>Product Name</th>
+                        <th><span class="material-symbols-outlined">barcode</span></a></th>                                         
+                        <th class="position-sticky end-0 table-info"><span class="material-icons">build</span></th>
+                    </tr>
+                </thead>
+                <tbody class="align-middle fw-bold">
+                {% for barcode in barcode_page_obj %}
+                    
+                   <tr class="h5">
+                        
+                        <td><a class="text-decoration-none" href="{% url "products" %}?form_type=search_product&query_barcode={{ barcode.barcodes }}" target="_blank">{{ barcode.barcodes }}</a></td>                        
+                        <td>{{ barcode.product }}</td>                        
+                        <td id=""><div id="barcodeSvg">{{ barcode.barcode_svg|safe}}</div></td>
+                        <td><button id="" class="btn btn-primary printBarcodeBtn" type="button" data-barcode="{{barcode.barcode_svg}}" data-product="{{ barcode.product }}"><span class="material-icons">print</span></button></td>
+                   </tr>
+                   
+                {% empty %}
+                   <tr  class="h4"><td colspan="4">No Custom Barcode Used</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center">
+                {% with query_string="&" %}
+                    {% for key, value in request.GET.items %}
+                        {% if key != 'page' %}
+                            {% with query_string=query_string|add:key|add:"="|add:value|add:"&" %}{% endwith %}
+                        {% endif %}
+                    {% endfor %}
+        
+                    {% if barcode_page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ barcode_page_obj.previous_page_number }}{{ query_string }}">Previous</a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled">
+                            <a class="page-link">Previous</a>
+                        </li>
+                    {% endif %}
+        
+                    {% for num in barcode_page_obj.paginator.page_range %}
+                        {% if num == 1 or num == barcode_page_obj.paginator.num_pages or num|add:"-2" <= barcode_page_obj.number and num|add:"2" >= barcode_page_obj.number %}
+                            <li class="page-item {% if barcode_page_obj.number == num %}active{% endif %}">
+                                <a class="page-link" href="?page={{ num }}{{ query_string }}">{{ num }} </a>
+                            </li>
+                        {% elif num == barcode_page_obj.number|add:"-3" or num == barcode_page_obj.number|add:"3" %}
+                            <li class="page-item disabled"><a class="page-link">...</a></li>
+                        {% endif %}
+                    {% endfor %}
+        
+                    {% if barcode_page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ barcode_page_obj.next_page_number }}{{ query_string }}">Next</a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled">
+                            <a class="page-link">Next</a>
+                        </li>
+                    {% endif %}
+                {% endwith %}
+            </ul>
+        </nav>
+        
+    </div>
+</div>
+<script>
+    {% comment %} function printDiv() {
+        let divContents = document.getElementById("barcodeSvg").innerHTML;
+        let printWindow = window.open('', '', 'height=1000, width=600');
+        printWindow.document.open();
+        printWindow.document.write('<html><head><title>Print</title></head><body>');
+        printWindow.document.write(divContents);  // Print the content inside the element
+        printWindow.document.write('</body></html>');
+        printWindow.document.close();
+        printWindow.print();
+    } {% endcomment %}
+    
+     
+</script>
+{% endblock content %}
+    
