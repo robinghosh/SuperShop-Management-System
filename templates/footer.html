@@ -1,21 +1,24 @@
-<footer class="d-flex flex-column flex-md-row flex-wrap align-items-center border-top mb-0 mt-4 border-primary justify-content-between px-3">
+<footer class="d-flex flex-column flex-md-row flex-wrap align-items-center border-top mb-0 mt-4 border-success justify-content-between px-3">
   <p class="mt-4 ms-md-2 text-success text-center text-md-start">
-      <span class="h4">©{{year}} Super Shop Management System.</span><br>
-      Developed By:
-      <a class="btn btn-success btn-md" href="https://github.com/robinghosh" target="_blank">
-          <b>ROBIN GHOSH</b>
-      </a>
+      <span class="h4 mb-2">©{{year}} Super Shop Management System.</span><br>
+      <span class="h5">
+        Developed By:
+        <a class="btn btn-success btn-md" href="https://github.com/robinghosh" target="_blank">
+            <b>ROBIN GHOSH</b>
+        </a>
+      </span>
+      
   </p>
 
   <div class="mt-2 mx-auto mx-md-0 text-center">
-      <ul class="nav justify-content-center">
+      <ul class="nav justify-content-center gap-2">
           {% if user.is_authenticated %}
-          <li class="nav-item">
-              <a href="{% url 'dashboard' %}" class="nav-link px-2">Dashboard</a>
+          <li class="nav-item ">
+              <a href="{% url 'dashboard' %}" class="nav-link px-2 ">Dashboard</a>
           </li>
           {% else %}
           <li class="nav-item">
-              <a href="{% url 'home' %}" class="nav-link px-2">Home</a>
+              <a href="{% url 'home' %}" class="nav-link px-2 ">Home</a>
           </li>
           {% endif %}
           <li class="nav-item">

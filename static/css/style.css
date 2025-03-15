@@ -17,11 +17,13 @@ body {
 }
 .navbar-custom .nav-link {
   color: rgb(7, 45, 86);
-  background-color: rgb(242, 243, 247);
-  border-radius: 15px;
+  background-color: #ffffff;
+  border-radius: 18px;
   width: 120px;
   font-family: "Lucida Console", "Courier New", monospace;
-  font-size: 16px;
+  font-size: 0.9vw;
+  text-align: center;
+ 
 }
 .navbar-custom .nav-link:hover {
   background-color: #007bff;
@@ -50,16 +52,16 @@ footer {
   text-align: center;
 }
 footer .nav-item .nav-link {
-  color: green;
-  background-color: #ffffff;
-  border-radius: 25px;
+  color:#ffffff;
+  background-color: #029202;
+  border-radius: 18px;
   text-decoration: none;
-  margin-left: 7px;
-  width: 90%;
+  
+  width: 100%;
   font-size: 1rem;
 }
 footer .nav-item .nav-link:hover {
   color: #ffffff;
-  background-color: #007bff;
+  background-color: #077807;
   text-decoration: none;
 }

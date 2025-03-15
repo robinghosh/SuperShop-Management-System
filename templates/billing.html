@@ -44,25 +44,26 @@
                 
                 <div class="form-group mb-2 text-center">
                     <label class="h5 text-primary fw-b" for="barcodeInput">Enter Product's Barcode or Select Directly</label>
-                    <div class="d-flex justify-content-center gap-2">
-                        <p class="d-flex justify-content-around form-control">
-                            <input type="text" class="form-control-plaintext border-0 " id="barcodeInput" placeholder="Enter Barcode" name="barcode" autofocus>
-                            <select class="dropdown border-0 border-start w-25" id="productSelect" name="productSelect" onchange="fillBarcode()">
-                                <option class="text-secondary fw-bold" selected="selected" disabled>Products</option><hr>
+                    <div class="d-flex justify-content-center gap-2 border border-2 rounded">
+                        <span class="d-flex justify-content-around ">
+                            <input type="text" class="form-control me-1 " id="barcodeInput" placeholder="Enter Barcode" name="barcode" autofocus>
+                            <select class="dropdown border border-tertiary rounded focus-ring focus-ring-success w-25 form-select form-select-color" id="productSelect" name="productSelect" onchange="fillBarcode()">
+                                <option class="text-secondary fw-bold" selected="selected" disabled>Select</option>
                                 {% for product in products %}
                                     {% if product.stock == 0 or product.stock < 0 %}
-                                        <option data-barcode="{{ product.barcode }}" disabled>{{ product.productName }} (Out Of stock)</span></option><hr>
+                                        <option class="" data-barcode="{{ product.barcode }}" disabled>{{ product.productName }} (Out Of stock)<hr></option>
+                                        
                                     {% else %}
-                                        <option data-barcode="{{ product.barcode }}">{{ product.productName }} (In Stock: {{ product.stock }})</option><hr> 
+                                        <option class="" data-barcode="{{ product.barcode }}">{{ product.productName }} (<b>In Stock: {{ product.stock }})</b><hr width="100%" size="5" color="blue" noshade></option>
+                                        
                                     {% endif %}
                                     
                                 {% endfor %}                             
                             </select>
-                        </p>
-                        
-                        
+                        </span>  
+                
                     </div>
-                    <button class="btn btn-primary w-25" id="addproductButton" type="submit" title="Add Product to Billing">Add</button>
+                    <button class="btn btn-primary w-25 mt-2" id="addproductButton" type="submit" title="Add Product to Billing">Add</button>
                 </div>
 
                 
@@ -141,48 +142,66 @@
        
             
             <div class="row mb-3">
-                <label for="vatPercent" class="col-sm-3 col-form-label text-end">VAT (%):</label>
+                <label for="vatPercent" class="col-sm-3 col-form-label text-lg-end">VAT (%):</label>
                 <div class="col-sm-9">
-                    <input type="text" class="form-control" id="vatPercent" name="vatPercent" placeholder="Enter VAT (%)" required> 
+                    <input type="number" class="form-control" id="vatPercent" name="vatPercent" placeholder="Enter VAT (%)" required> 
                 </div>
             </div>
 
-            <div class="row mb-3">
-                <label for="discountPercent" class="col-sm-3 col-form-label text-end">Discount (%):</label>
+            <div class="row mb-3 d-d-md-flex justify-content-md-center justify-content-sm-center">
+                <label for="discountPercent" class="col-sm-3 col-form-label text-lg-end">Discount (%):</label>
                 <div class="col-sm-9">
-                    <input type="text" class="form-control" id="discountPercent" name="discountPercent" placeholder="Discount" required>
+                    <input type="number" class="form-control" id="discountPercent" name="discountPercent" placeholder="Discount" required>
+                   
                 </div>
+               
             </div>
             
-            
             <div class="row mb-3">
-                <label for="customerPhone" class="col-sm-3 col-form-label text-end">Customer Phone:</label>
-                <div class="col-sm-9 input-box-customerPhone">
-                    <p class="form-control">+880 <input type="number" class="border-0 w-75" maxlength="11" minlength="10" id="customerPhone" name="customerPhone" placeholder="Enter Customer Phone" required></p>                               
-                </div>
-            </div>
-            
-            <div class="row mb-3 align-middle">
-                <label for="paymentMethod" class="col-sm-3 col-form-label text-end">Payment Method:</label>
+                <label for="customerPhone" class="col-sm-3 col-form-label text-lg-end">Customer Phone:</label>
                 <div class="col-sm-9">
-                    <div class="form-check form-check-inline mt-2 me-5">
-                        <input class="form-check-input" type="radio" name="paymentMethod" id="cash" value="Cash" checked>                
-                        <label class="form-check-label" for="cash">Cash</label>
+                    <div class="form-control focus-ring-primary d-flex align-items-center">
+                        <span class="me-1">+880</span>
+                        <input type="number" class="border-0 flex-grow-1" maxlength="11" minlength="10" id="customerPhone" name="customerPhone" placeholder="Enter Customer Phone" required>
                     </div>
-                    <div class="form-check form-check-inline mt-2 me-5">
-                        <input class="form-check-input" type="radio" name="paymentMethod" id="bkash" value="Bkash" >                
-                        <label class="form-check-label" for="bkash">Bkash</label>
+                </div>
+            </div>
+            
+            <div class="row mb-3 d-flex align-items-center">
+                <label for="paymentMethod" class="col-sm-3 col-form-label text-lg-end ">Payment Method:</label>
+                <div class="col-sm-9 d-flex justify-content-around flex-wrap ">
+                    <!-- Cash -->
+                    <div class="card text-center h-25 shadow-sm border border-2 border-light mb-1 " onclick="selectPayment('cash')">
+                        <div class="card-body">
+                            <input type="radio" class="btn-check" name="paymentMethod" id="cash" value="Cash" checked>
+                            <label class="btn btn-outline-success w-100" for="cash">Cash</label>
+                        </div>
+                    </div>
+                    <!-- Bkash -->
+                    <div class="card text-center h-25 shadow-sm border border-2 border-light mb-1" onclick="selectPayment('bkash')">
+                        <div class="card-body">
+                            <input type="radio" class="btn-check" name="paymentMethod" id="bkash" value="Bkash">
+                            <label class="btn btn-outline-danger w-100" for="bkash">Bkash</label>
+                        </div>
                     </div>   
-                    <div class="form-check form-check-inline mt-2 me-5">
-                        <input class="form-check-input" type="radio" name="paymentMethod" id="nagad" value="Nagad" >                
-                        <label class="form-check-label" for="nagad">Nagad</label>
+                    <!-- Nagad -->
+                    <div class="card text-center h-25 shadow-sm border border-2 border-light" onclick="selectPayment('nagad')">
+                        <div class="card-body">
+                            <input type="radio" class="btn-check" name="paymentMethod" id="nagad" value="Nagad">
+                            <label class="btn btn-outline-warning w-100" for="nagad">Nagad</label>
+                        </div>
                     </div>   
-                    <div class="form-check form-check-inline mt-2 ">
-                        <input class="form-check-input" type="radio" name="paymentMethod" id="card" value="Card" >                
-                        <label class="form-check-label" for="card">Card</label>
+                    <!-- Card -->
+                    <div class="card text-center h-25 shadow-sm border border-2 border-light" onclick="selectPayment('card')">
+                        <div class="card-body">
+                            <input type="radio" class="btn-check" name="paymentMethod" id="card" value="Card">
+                            <label class="btn btn-outline-primary w-100 h-100" for="card">Card</label>
+                        </div>
                     </div>   
                 </div>
             </div>
+            
+            
             
             <div class="text-center d-flex justify-content-center">
                 <button class="btn btn-primary" type="submit">Submit Order</button>
@@ -193,7 +212,7 @@
                         <div class="d-flex form-group col-md-6 mx-auto">
                             <input type="hidden" name="form_type" value="form3">
                             <input type="hidden" class="form-control" name="removeBarcode" value="{{ item.barcode }}">
-                            <button class="btn btn-primary ms-2" type="submit"><span class="material-icons">delete</span></button>
+                            <button class="btn btn-primary ms-1" type="submit" title="Reset Cart"><span class="material-symbols-outlined">replay</span></button>
                         </div>
                     </form>
                 </div>
@@ -219,6 +238,9 @@
             btn.click()
         }
     }
+    function selectPayment(id) {
+        document.getElementById(id).checked = true;
+    }
        
     {% comment %} document.querySelectorAll('.removeForm').forEach(form => {
         form.addEventListener('submit', function(e) {
@@ -239,6 +261,10 @@
 
     document.addEventListener("DOMContentLoaded", function () {
         // Function to calculate and update the total subtotal
+        let options = document.querySelectorAll("#productSelect option:disabled");
+        options.forEach(option => {
+            option.style.color = "red"; // Apply color to disabled options
+        });
         function calculateTotal() {
             let total = 0;
     
