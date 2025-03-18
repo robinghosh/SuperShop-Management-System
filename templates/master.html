@@ -11,6 +11,7 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">    
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
     <link rel="stylesheet" href="{% static "css/style.css" %}">
+    
     <style>
       
       {% block style %}{% endblock style %}
@@ -19,12 +20,12 @@
     {% block script %} {% endblock script %}
     
   </head>
-  <body>
+  <body id="body">
     <!-- Navbar -->
     {% include "navbar.html" %}    
     
     <!-- Main Content -->
-    <main class="container mt-4">{% block content %} {% endblock %}</main>
+    <main id="" class="container mt-4">{% block content %} {% endblock %}</main>
 
     {% include "footer.html" %}
     <!-- Bootstrap JS -->
@@ -52,6 +53,10 @@
         }
         return cookieValue;
     }
+    </script>
+    <script>
+      const div = document.getElementById("body-");
+      div.addEventListener("contextmenu", (e) => {e.preventDefault()});
     </script>
   </body>
 </html>

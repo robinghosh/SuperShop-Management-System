@@ -7,37 +7,118 @@
 {% block content %}
 <div class="d-flex align-items-center justify-content-center flex-column mb-0">
     <p class="h1 fw-bold text-primary text-center">Super Shop Management System</p>
-    <p class="h2 text-secondary"><b>User :</b> @{{user.username}}<p>
+    <p class="h2 text-dark-emphasis"><b>User :</b> @{{user.username}}<p>
 </div>
 {% if user.is_superuser %}
+    <a href="#" class="btn btn-primary fs-4 position-fixed bottom-0 end-0 translate-middle-y">
+        <span class="material-symbols-outlined">arrow_upward</span>
+    </a>
+  
     <div class="d-flex align-items-center justify-content-center mb-5">
-        <div class="w-100 bg-light p-4 rounded shadow justify-content-center">
-            <p class="h4 text-center text-primary">Last 7 Days Sales Report</p>
-            <div class="container-fluid overflow-x-auto ">
-                <table class="table table-bordered table-hover text-center table-light">
-                    <tbody>
-                        <tr class="w-100">
-                            <th>Days</th>
-                            {% for days in last_seven_days %}
-                                <td class=>{{ days }}</td> 
-                            {% endfor %}
-                        </tr>
-                        <tr class="w-100 ">
-                            <th>Values</th>
-                            {% for value in  total_last_seven_days %}
-                                <td>৳{{ value }}</td>
-                            {% endfor %}
-                        </tr>
-                        <tr class="w-100 ">
-                            <th>Total</th>
-                            <td colspan="7" class="text-center fw-bold">৳{{ sum_last_seven_days_value }}</td>
-                        </tr>
-    
-                    </tbody>            
-                </table>
+        <div class="w-100 bg-body p-4 rounded shadow justify-content-center">        
+            <p class="h2 fw-bold text-center text-primary">Sales Report</p>
+
+            <div class="justify-content-center ms-3">
+                <a class="btn btn-secondary" href="#sevenDays">7 Days</a>   
+                <a class="btn btn-primary" href="#thirtyDays">30 Days</a>  
+                <button type="button" class="btn bg-primary text-white btn-sm edit-product-btn" data-bs-toggle="modal" data-bs-target="#printReportModal"  title="Print Report"><span class="material-icons">print</span></button>
+                <div class="modal fade printReportModal h-100" id="printReportModal" tabindex="-1" aria-labelledby="printReportModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered modal-md ">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h1 class="modal-title fs-1 text-primary" id="printReportModalLabel">Generate Report</h1>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>                                
+                            </div>
+                            <div class="modal-body justify-content-center">
+                                <div class="form-container">
+                                    <form class="form d-flex flex-column gap-3" action="{% url "sales_report" %}" method="get">
+                                        
+                                        <label class="form-label" or="startDate">From:</label>
+                                        <input class="form-control" type="date" name="startDate" id="startDate">
+                                        <label class="form-label" or="endDate">To:</label>
+                                        <input class="form-control" type="date" name="endDate" id="endDate">
+                                        <button class="btn btn-primary" type="submit">Generate</button>
+                                    </form>
+                                </div>
+                            </div>
+                            <div class="modal-footer bg-body-secondary">
+                            </div>
+                        </div>
+                    </div>
+                </div> 
+            </div>             
+            <div class="container-fluid mt-2">
+                <!--7 Days report-->
+                <div class="overflow-x-auto border border-3 border-secondary-subtle  rounded">
+                    
+                    <!--Chart-->
+                    {% comment %} <p class="h5 text-primary ms-2 fw-bold">Chart</p>                     {% endcomment %}
+                    <canvas class="w-100" id="sevenDaysSalesChart"></canvas>
+
+                    <p class="h5 text-primary ms-2 fw-bold">Table: Last 7 days Sales Report</p>
+                    <!--Table-->
+                    <div class="overflow-x-auto" id="seveDays"> 
+                        <table class="table table-bordered table-hover text-center table-light">
+                            <tbody>
+                                <tr class="w-100">
+                                    <th class="position-sticky start-0 table-active">Day</th>
+                                    {% for days in last_seven_days %}
+                                        <td class=>{{ days }}</td> 
+                                    {% endfor %}
+                                </tr>
+                                <tr class="w-100 ">
+                                    <th class="position-sticky start-0 table-active">Values</th>
+                                    {% for value in  total_last_seven_days %}
+                                        <td>৳{{ value }}</td>
+                                    {% endfor %}
+                                </tr>
+                                <tr class="w-100 ">
+                                    <th class="position-sticky start-0 table-active align-middle">Total</th>
+                                    <td colspan="7" class="text-center fw-bold "><p class="position-sticky start-50 top-50 align-middle">৳{{ sum_last_seven_days_value }}</p></td>
+                                </tr>
+            
+                            </tbody>            
+                        </table>
+                    </div>
+                   
+                </div>
+                
+                <hr style="height:2px;border-width:0;color:gray;background-color:gray">
+                <!--30 days sales report-->
+                <div class="border border-3 border-secondary-subtle rounded " id="thirtyDays"> 
+                                        
+                    {% comment %} <p class="h5 text-primary ms-2 fw-bold">Chart</p> {% endcomment %}
+                    <canvas class="w-100" id="thirtyDaysSalesChart"></canvas>
+
+                    <p class="h5 text-primary ms-2 fw-bold" id="seveDays">Table: Last 30 days Sales Report</p>
+                    <div class="overflow-x-auto ">
+                        
+                        <table class="table table-bordered table-hover text-center table-light">
+                            <tbody>
+                                <tr class="w-100">
+                                    <th class="position-sticky start-0 table-active">Day</th>
+                                    {% for days in last_thirty_days %}
+                                        <td class=>{{ days }}</td> 
+                                    {% endfor %}
+                                </tr>
+                                <tr class="w-100 ">
+                                    <th class="position-sticky start-0 table-active">Values</th>
+                                    {% for value in  total_last_thirty_days %}
+                                        <td>৳{{ value }}</td>
+                                    {% endfor %}
+                                </tr>
+                                <tr class="w-100">
+                                    <th class="position-sticky start-0 table-active">Total</th>
+                                    <td colspan="30" class="text-center fw-bold"><p class="position-sticky start-0 align-middle">৳{{ sum_last_thirty_days_value }}</p></td>                   
+                                </tr>            
+                            </tbody>            
+                        </table>
+                    </div>                    
+                </div>           
             </div>            
         </div>
-    </div>
+    </div>    
+   
 {% endif %}
 <div class="d-flex align-items-center justify-content-center" >
     <div class="w-75 bg-light p-4 rounded shadow">
@@ -99,3 +180,118 @@
 
 
 {% endblock %}
+{% block script %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>  <!-- Ensure Chart.js is loaded -->
+
+<script>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    // Convert Django lists into JavaScript arrays
+    const seven_xValues = [{% for day in last_seven_days %} "{{ day }}", {% endfor %}];
+    const seven_yValues = [{% for value in total_last_seven_days %} {{ value }}, {% endfor %}];
+    const thirty_xValues = [{% for day in last_thirty_days %} "{{ day }}", {% endfor %}];
+    const thirty_yValues = [{% for value in total_last_thirty_days %} {{ value }}, {% endfor %}];
+
+    var sevenCtx = document.getElementById("sevenDaysSalesChart").getContext("2d");
+    var thirtyCtx = document.getElementById("thirtyDaysSalesChart").getContext("2d");
+
+    new Chart(sevenCtx, {
+        type: "bar",  // You can change to "bar" for a bar chart
+        data: {
+            labels: seven_xValues,
+            datasets: [{
+                label: "Sales Value ",
+                backgroundColor:"rgb(59, 113, 202, 0.8)",
+                borderColor: "rgb(3, 20, 37)",
+                borderWidth: 1,
+                data: seven_yValues,
+                fill: false, // Set to false if you don't want the area under the line to be shaded
+                tension: 0.3     // Makes the line smooth
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: true },
+                title: {
+                    display: true,
+                    text: "Sales Report - Last 7 Days", 
+                    font: { size: 24, weight: "bold" },
+                    color: "#3B71CA",
+                }
+            },
+            scales: {
+                x: {
+                    title: { 
+                        display: true,
+                        text: "Date",
+                        font: {size: 20, weight:"bold"},
+                        color: "red"
+                    }
+                },
+                y: {
+                    title: { 
+                        display: true,
+                        text: "Sales (৳)",
+                        font: {size: 20, weight:"bold"},
+                        color: "green"
+                    },
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+    // Last 30 days
+    new Chart(thirtyCtx, {
+        type: "bar", 
+        data: {
+            labels: thirty_xValues,
+            datasets: [{
+                label: "Sales Value ",
+                backgroundColor:"rgb(59, 113, 202, 1)",
+                borderColor: "rgb(3, 20, 37)",
+                borderWidth: 1,
+                data: thirty_yValues,
+                fill: true,
+                tension: 0.1 
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: true },
+                title: {
+                    display: true,
+                    text: "Sales Report - Last 30 Days", 
+                    font: { size: 24, weight: "bold" },
+                    color: "#3B71CA",
+                }
+            },
+            scales: {
+                x: {
+                    title: { 
+                        display: true,
+                        text: "Date",
+                        font: {size: 20, weight:"bold"},
+                        color: "red"
+                    }
+                },
+                y: {
+                    title: { 
+                        display: true,
+                        text: "Sales (৳)",
+                        font: {size: 20, weight:"bold"},
+                        color: "green"
+                    },
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+});
+</script>
+
+{% endblock script %}

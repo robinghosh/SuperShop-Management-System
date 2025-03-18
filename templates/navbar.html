@@ -1,7 +1,7 @@
 {% load static %}
 <nav class="navbar w-100 navbar-expand-lg navbar-custom bg-active position-sticky top-0 z-3">
     <div class="container-fluid">
-      <a class="navbar-brand" href="{% url 'home' %}"><img class="img-fluid" src="{% static 'images/ssms_logo.png' %}" style='width: 40px; height: auto;' alt="Super Shop Management System">Super Shop MS</a>
+      <a class="navbar-brand" href="{% url 'home' %}"><img class="img-fluid" src="{% static 'images/ssms_logo.png' %}" style='width: 25px; height: auto;' alt="Super Shop Management System">Super Shop MS</a>
       <button
         class="navbar-toggler bg-light justify-content-center"
         type="button"
@@ -14,7 +14,7 @@
       </button>
       
       <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav ms-auto text-center">
+        <ul class="navbar-nav ms-auto text-center ">
             {% if user.is_authenticated %} <!--Show Navbar only if the user is logged in-->
             <li class="nav-item m-1">
                 <a class="nav-link px-3" href="{% url "dashboard" %}">Dashboard</a>

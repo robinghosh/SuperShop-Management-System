@@ -43,28 +43,100 @@ def dashboard(request):
         sales_record = SalesRecord.objects.all()
         today = datetime.today()
         last_seven_days = []
+        last_thirty_days = []
         total_last_seven_days = []
+        total_last_thirty_days = []
         
        
         for day in range(7):
             days = today - timedelta(day)
             last_seven_days.append(days.strftime('%Y-%m-%d'))
             
+        for day in range(30):
+            days = today - timedelta(day)
+            last_thirty_days.append(days.strftime('%Y-%m-%d'))
+            
         for days in range(len(last_seven_days)):            
             filtered_record = sales_record.filter(sale_date__date=last_seven_days[days])
             sales_value_of_day = float(filtered_record.aggregate(total=Sum("netTotal"))["total"] or 0)
             total_last_seven_days.append(sales_value_of_day)
             
+        for days in range(len(last_thirty_days)):            
+            filtered_record = sales_record.filter(sale_date__date=last_thirty_days[days])
+            sales_value_of_day = float(filtered_record.aggregate(total=Sum("netTotal"))["total"] or 0)
+            total_last_thirty_days.append(sales_value_of_day)
+            
         sum_last_seven_days_value = sum(total_last_seven_days)
+        sum_last_thirty_days_value = sum(total_last_thirty_days)
+        
         
         context = {
             'last_seven_days': last_seven_days,
             'total_last_seven_days': total_last_seven_days,
             'sum_last_seven_days_value': sum_last_seven_days_value,
+            'last_thirty_days' : last_thirty_days,
+            'total_last_thirty_days': total_last_thirty_days,
+            'sum_last_thirty_days_value': sum_last_thirty_days_value,
         }
         return render(request, "dashboard.html", context)
     return render(request, "dashboard.html",)
 
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+from django.db.models import Sum
+from .models import SalesRecord
+
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+from django.db.models import Sum
+from .models import SalesRecord
+
+@login_required
+def sales_report(request):
+    start_date = request.GET.get("startDate")
+    end_date = request.GET.get("endDate")
+    product_wise_sales = {}  # Use a dictionary instead of a list
+    filtered_records = []  # Ensure it's always defined
+    total_value = 0  # Ensure it's always defined
+    total_vat = 0
+    total_discount = 0
+    sum_subtotal = 0
+    if start_date and end_date:
+        try:
+            filtered_records = SalesRecord.objects.filter(sale_date__date__range=(start_date, end_date))
+            total_value = "{0:.2f}".format(filtered_records.aggregate(total=Sum("netTotal"))["total"] or 0)
+            total_vat = "{0:.2f}".format(filtered_records.aggregate(vat=Sum("vatAmmount"))["vat"] or 0)
+            total_discount = "{0:.2f}".format(filtered_records.aggregate(discount=Sum("discountAmmount"))["discount"] or 0)
+            
+            for record in filtered_records:
+                for item in record.items.all():
+                    if item.productName in product_wise_sales: 
+                        product_wise_sales[item.productName]["quantity"] += item.quantity
+                        product_wise_sales[item.productName]["subtotal"] += item.subtotal
+                    else:
+                        product_wise_sales[item.productName] = {
+                            "quantity": item.quantity,
+                            "price": item.price,
+                            "subtotal": item.subtotal,
+                        }
+            for item in product_wise_sales.values():                
+                sum_subtotal += item['subtotal']
+            
+             # Debugging output
+        except Exception as e:
+            print(f"Error fetching sales report: {e}") 
+
+    context = {
+        "start_date": start_date,
+        "end_date": end_date,
+        "filtered_records": filtered_records,
+        "product_wise_sales": product_wise_sales,        
+        "sum_subtotal": sum_subtotal,
+        "total_vat": total_vat,
+        "total_discount": total_discount,
+        "total_value": total_value,
+    }
+    return render(request, "sales_report.html", context)
 
 #products View
 @login_required
@@ -395,8 +467,20 @@ def sales_record(request):
     query_customer_phone = request.GET.get("query_customer_phone")
 
     filtered_records = None  # Store the result of the selected search
+    if query_customer_phone and query_date:
+        filtered_records = sales_records.filter(customer__customerPhone=query_customer_phone, sale_date__date=query_date)
+        sales_count_for_customer = filtered_records.count()
+        total_sales_value_for_customer = filtered_records.aggregate(total=Sum("netTotal"))["total"] or 0
 
-    if query_date:
+        if sales_count_for_customer > 0:
+            messages.success(
+                request,
+                f"Sales Record for Customer: <b>{query_customer_phone}</b> On: <b>{query_date}</b> <br> Total Purchases: <b>{sales_count_for_customer}</b> and Total Value: <b>{total_sales_value_for_customer:.2f} TK.</b>"
+            )
+        else:
+            messages.error(request, f"No sales records exist for <b>{query_customer_phone}</b>.")
+            filtered_records = None  # Reset to prevent display issues later
+    elif query_date:
         filtered_records = sales_records.filter(sale_date__date=query_date)
         sales_count_from_date = filtered_records.count()
         total_sales_value_for_query_date = filtered_records.aggregate(total=Sum("netTotal"))["total"] or 0
@@ -430,6 +514,7 @@ def sales_record(request):
         else:
             messages.error(request, f"No sales records exist for <b>{query_customer_phone}</b>.")
             filtered_records = None  # Reset to prevent display issues later
+    
 
     
         

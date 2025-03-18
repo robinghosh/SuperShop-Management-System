@@ -21,7 +21,7 @@ body {
   border-radius: 18px;
   width: 120px;
   font-family: "Lucida Console", "Courier New", monospace;
-  font-size: 0.9vw;
+  font-size: 1rem !important;
   text-align: center;
  
 }
@@ -33,9 +33,9 @@ body {
 }
 
 @media screen and (max-width: 1000px) {
-  .navbar-custom .nav-link,
-  nav-item {
+  .navbar-custom .nav-link{
     width: 100%;
+    
   }
   footer {
     display: flex;

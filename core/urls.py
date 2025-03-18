@@ -12,6 +12,7 @@ urlpatterns = [
     path("sales/invoice/<int:sales_id>/", views.invoice, name="invoice"),
     path("sales/", views.sales_record, name="sales"),
     path("customers/", views.customers, name="customers"),
+    path("sales_report/", views.sales_report, name="sales_report"),
 
     path("faq/", views.faq, name="faq"),
     path("featues/", views.features, name="features"),
