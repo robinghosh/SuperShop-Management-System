@@ -1,10 +1,11 @@
 {% extends "master.html" %}
 {% load static %}
 {% block title %}
-  Dashboard
+  Dashboard - SSMS
 {% endblock %}
     
 {% block content %}
+{% include "messages.html" %}
 <div class="d-flex align-items-center justify-content-center flex-column mb-0">
     <p class="h1 fw-bold text-primary text-center">Super Shop Management System</p>
     <p class="h2 text-dark-emphasis"><b>User :</b> @{{user.username}}<p>
@@ -18,26 +19,40 @@
         <div class="w-100 bg-body p-4 rounded shadow justify-content-center">        
             <p class="h2 fw-bold text-center text-primary">Sales Report</p>
 
-            <div class="justify-content-center ms-3">
-                <a class="btn btn-secondary" href="#sevenDays">7 Days</a>   
-                <a class="btn btn-primary" href="#thirtyDays">30 Days</a>  
-                <button type="button" class="btn bg-primary text-white btn-sm edit-product-btn" data-bs-toggle="modal" data-bs-target="#printReportModal"  title="Print Report"><span class="material-icons">print</span></button>
+            <div class="justify-content-center ">
+                <div class="d-flex justify-content-between mx-3">
+                    <div class="">
+                        <a class="btn btn-secondary" href="#sevenDays">7 Days</a>   
+                        <a class="btn btn-secondary" href="#thirtyDays">30 Days</a> 
+                    </div>                    
+                    <div class="">
+                        <button type="button" class="btn bg-primary text-white btn-sm " data-bs-toggle="modal" data-bs-target="#printReportModal" title="Sales Report">
+                            <span class="material-symbols-outlined">
+                                summarize
+                            </span>
+                        </button>
+                    </div>
+                </div>
+                
+                 
                 <div class="modal fade printReportModal h-100" id="printReportModal" tabindex="-1" aria-labelledby="printReportModalLabel" aria-hidden="true">
                     <div class="modal-dialog modal-dialog-centered modal-md ">
                         <div class="modal-content">
                             <div class="modal-header">
-                                <h1 class="modal-title fs-1 text-primary" id="printReportModalLabel">Generate Report</h1>
+                                <h1 class="modal-title fs-3 text-primary" id="printReportModalLabel">Generate Report</h1>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>                                
                             </div>
                             <div class="modal-body justify-content-center">
                                 <div class="form-container">
-                                    <form class="form d-flex flex-column gap-3" action="{% url "sales_report" %}" method="get">
+                                    <form class="form d-flex flex-column gap-1" action="{% url "sales_report" %}" method="get" target="{% for message in messages %}{% if message.tags == "error" %}_parent{% else %}_blank{% endif %}{% endfor %}">
+
+                                        <input class="form-control" type="month" id="monthInput" placeholder="Select Month " onchange="pushDate()">
+                                        <label class="form-label text-primary fs-5" or="startDate">From:</label>
+                                        <input class="form-control" type="date" name="startDate" id="startDate" required>
+                                        <label class="form-label text-primary fs-5" or="endDate">To (optional):</label>
+                                        <input class="form-control" type="date" name="endDate" id="endDate" >
+                                        <button class="btn btn-primary" type="submit" id="genButton">Generate Report</button>
                                         
-                                        <label class="form-label" or="startDate">From:</label>
-                                        <input class="form-control" type="date" name="startDate" id="startDate">
-                                        <label class="form-label" or="endDate">To:</label>
-                                        <input class="form-control" type="date" name="endDate" id="endDate">
-                                        <button class="btn btn-primary" type="submit">Generate</button>
                                     </form>
                                 </div>
                             </div>
@@ -178,12 +193,9 @@
     </div>
 </div>
 
-
-{% endblock %}
-{% block script %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>  <!-- Ensure Chart.js is loaded -->
 
-<script>
+
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -293,5 +305,66 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 });
 </script>
+<script>
+    let startDate = document.getElementById("startDate")
+    let endDate = document.getElementById("endDate")
+    let genButton = document.getElementById("genButton")
+    function getMonthStartEnd(year, month) {
+        let firstDay = new Date(year, month - 1, 1);
+        let lastDay = new Date(year, month, 0);
+        
+        // Manually format the date to avoid timezone issues
+        function formatDate(date) {
+            let yyyy = date.getFullYear();
+            let mm = String(date.getMonth() + 1).padStart(2, '0'); // Ensure 2-digit month
+            let dd = String(date.getDate()).padStart(2, '0'); // Ensure 2-digit day
+            return `${yyyy}-${mm}-${dd}`;
+        }
+        startDate.value = formatDate(firstDay);
+        endDate.value = formatDate(lastDay)
+        return {
+            firstDate: formatDate(firstDay),
+            lastDate: formatDate(lastDay)
+        };
+    }
+    function pushDate(){
+        let monthYear = document.getElementById("monthInput");
+        let year = monthYear.value.split('-')[0];
+        let month = monthYear.value.split('-')[1];
+        getMonthStartEnd(year, month);
+        genButton.click();
+    }
+   
+    // Example usage
+    
+    
+        
+        
+        {% comment %} document.addEventListener("DOMContentLoaded", function () {
+            
+            let modal = document.getElementById("printReportModal"); // Replace with your modal's actual ID
 
-{% endblock script %}
+            if (modal) {
+                modal.addEventListener("shown.bs.modal", function () {
+                function pushMonthFunc(){
+                    let month = document.getElementById("monthInput");
+                    
+                    console.log(month.value);
+                };
+                    let date = new Date("2025-03");
+                    let firstDay = new Date(date.getFullYear(), date.getMonth(), 1);
+                    let lastDay = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+                    console.log("First day=" + firstDay)
+                    console.log("Last day = " + lastDay);
+                    
+                    
+                });
+            }
+        }); {% endcomment %}
+        
+        
+    
+    
+</script>
+{% endblock %}
+

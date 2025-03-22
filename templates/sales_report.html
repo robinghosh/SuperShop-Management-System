@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,69 +7,81 @@
     <title>Sales Report</title>
     
     <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-
+    <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
     <style>
         /* Print Styles */
+        body{
+            font-family: Arial, Helvetica, sans-serif;        }
+        .print-btn, .back-btn{
+            opacity: 30%;
+        }
+        .print-btn:hover, .back-btn:hover{
+            opacity: 100%;
+        }
         @media print {
-            {% comment %} body {
-                background: white !important;
+            body {
+                font-family: Arial, Helvetica, sans-serif;
                 margin: 0;
                 padding: 0;
             }
 
-            /* Hide everything except .container */
-           
-
-            .container {
-                visibility: visible;
-                position: absolute;
-                top: 0;
-                left: 0;
-                width: 100%;
-                max-width: 600px;
-                margin: auto;
+            /* Make the container take full width */
+            .main {
+                width: 100vw !important;  /* 100% of the viewport width */
+                max-width: 100% !important;
+                margin: 0 !important;
+                padding: 20px;
                 border: none;
-                padding: 10px;
                 background: white;
             }
 
-            /* Make sure tables look good in print */
-            .container table {
+            /* Ensure tables take full width */
+            .main table {
                 width: 100%;
                 font-size: 12px;
                 border-collapse: collapse;
             }
 
-            .container th, .container td {
+            .main th, .main td {
                 border: 1px solid black;
                 padding: 5px;
                 text-align: center;
             }
 
-            /* Hide the print button */ {% endcomment %}
-            .print-btn {
+            /* Hide the print button */
+            .print-btn, .back-btn{
                 display: none !important;
             }
+            
         }
     </style>
 </head>
 <body class="bg-white">
-    <div class="container mt-4 w-100 bg-white ">
+    <div class="text-end">
+        <p class="fs-6">This Report is Automatically Generated On <strong>{{date_today}}</strong></p>
+    </div>
+    <div class="main mt-4 bg-white">
         <div class="text-center">
-            <h2 class="fw-bold">Super Shop Management System</h2>
-            <p class="fs-5">Sales Report from <b>{{ start_date }}</b> to <b>{{ end_date }}</b></p>
+            <h1 class="fw-bolder">Super Shop Management System</h1>
+            {% if start_date and end_date %}
+            <p class="fs-4 fst-italic">Sales Report from <b>{{ start_date }}</b> to <b>{{ end_date }}</b></p>
+            {% elif start_date and not end_date %}
+            <p class="fs-4 fst-italic">Sales Report for <b>{{ start_date }}</b></p>
+            {% endif %}
         </div>
-
-        <hr>
-
-        <div class="mt-3">
-            <p class="fs-5"><strong>Total Value:</strong> {{ total_value }} TK</p>
-
-            <div class="table-responsive">
-                <table class="table table-bordered text-center">
-                    <thead class="table-dark">
-                        <tr>
+       
+        <div class="mt-3 ">
+            {% comment %} <div class="d-flex justify-content-center">
+                <p class="fs-5 fw-bold">Net Total: {{ total_value }} TK</p>
+            </div> {% endcomment %}
+            <div class="title text-center">
+                <p class="h4 text-dark-emphasis fw-bold">Product Wise Sales Summary</p>
+            </div>
+            <div class="table-responsive">                
+                <table class="table table-bordered text-center">                    
+                    <thead class="table-primary">
+                        <tr class="fs-6">
+                            <th>SL.</th>
                             <th>Product</th>    
                             <th>QTY</th>
                             <th>Price</th>
@@ -77,7 +90,8 @@
                     </thead>
                     <tbody>
                         {% for key, value in product_wise_sales.items %}
-                        <tr>
+                        <tr class="fs-6">
+                            <td class="fw-bold">{{forloop.counter}}.</td>
                             <td>{{ key }}</td>
                             <td>{{ value.quantity }}</td>
                             <td>{{ value.price }} TK</td>
@@ -85,43 +99,76 @@
                         </tr>
                         {% empty %}
                         <tr>
-                            <td colspan="4" class="text-danger">No Records Found</td>
+                            <td colspan="4" class="text-danger h4">No Records Found</td>
                         </tr>
                         {% endfor %}
 
                         {% if sum_subtotal and total_vat and total_discount and total_value %}
-                        <tr class="table-warning">
-                            <td colspan="3"><strong>Total</strong></td>
+                        <tr class="table-warning fs-5 align-middle">
+                            <td class="text-end" colspan="4"><strong>Total</strong></td>
                             <td>{{ sum_subtotal }} TK</td>
                         </tr>
-                        <tr>
-                            <td colspan="3"><strong>Total VAT</strong></td>
+                        <tr class="fs-5 align-middle">
+                            <td class="text-end" colspan="4"><strong>Total VAT</strong></td>
                             <td>{{ total_vat }} TK</td>
                         </tr>
-                        <tr>
-                            <td colspan="3"><strong>Total Discount</strong></td>
+                        <tr class="fs-5"> 
+                            <td class="text-end align-middle" colspan="4"><strong>Total Discount</strong></td>
                             <td>{{ total_discount }} TK</td>
                         </tr>
-                        <tr class="table-success">
-                            <td colspan="3"><strong>Net Total</strong></td>
+                        <tr class="table-success fs-4 align-middle">
+                            <td class="text-end" colspan="4"><strong>Net Total</strong></td>
                             <td>{{ total_value }} TK</td>
                         </tr>
                         {% else %}
-                        <tr>
-                            <td colspan="4" class="text-muted">No Data Available</td>
-                        </tr>
+                        <hr>
                         {% endif %}
                     </tbody>
                 </table>
             </div>
+            <!--Date wise-->
+        {% if end_date %}
+            <br><br><br><br><br><br><br><br><br><br><br>
+            <div class="text-center mb-4 mt-5">
+                <div class="title text-center">
+                    <p class="h4 fw-bold text-dark-emphasis">Date Wise Sales Summary</p>
+                </div>
+                <table class="table table-bordered">
+                    <thead class="table-primary ">
+                        <th>Date</th>                        
+                        <th>Total VAT</th>
+                        <th>Total Discount</th>
+                        <th>Total</th>
+                    </thead>
+                    <tbody>
+                        {% for date, value in sale_by_dates.items %}
+                        <tr>
+                            <td>{{date}}</td>                            
+                            <td>{{value.total_vat_by_date}} TK</td>
+                            <td>{{value.total_discount_by_date}} TK</td>
+                            <td>{{value.total_value_by_date}} TK</td>
+                        </tr>
+                        
+                        {% endfor %}
+                        
+                    </tbody>
+                </table>        
+                <hr>
+                <br><br><br>        
+            </div>
+        {% endif %}
         </div>
 
-        <div class="text-center mt-4">
-            <button class="btn btn-primary print-btn" onclick="window.print()">Print Report</button>
-        </div>
+        
     </div>
-
+    <div class="text-center position-fixed top-0 end-0 mt-4 me-2">
+        <button class="btn btn-danger rounded-5 print-btn" onclick="window.print()">Print Report</button>
+    </div>
+    <div class="text-center position-fixed top-0 start-0 mt-4 ms-2">
+        <button class="btn btn-secondary rounded-5 back-btn" onclick="history.back()">Go Back</button>
+    </div>
     <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+
 </body>
 </html>

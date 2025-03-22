@@ -23,7 +23,7 @@ staticfiles/
 # System files
 desktop.ini
 #test files
-cmd.cmd
+*.cmd
 # PDFs and generated files
 *.pdf
 

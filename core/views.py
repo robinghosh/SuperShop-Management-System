@@ -18,8 +18,8 @@ from decimal import Decimal
 from io import BytesIO
 from barcode import Code39
 from barcode.writer import SVGWriter
-
-
+from collections import defaultdict
+import logging
 
 #Index/Home/Login View
 class CustomLoginView(LoginView):
@@ -81,63 +81,87 @@ def dashboard(request):
         return render(request, "dashboard.html", context)
     return render(request, "dashboard.html",)
 
-from django.shortcuts import render
-from django.contrib.auth.decorators import login_required
-from django.db.models import Sum
-from .models import SalesRecord
 
-from django.shortcuts import render
-from django.contrib.auth.decorators import login_required
-from django.db.models import Sum
-from .models import SalesRecord
+
+logger = logging.getLogger(__name__)
 
 @login_required
 def sales_report(request):
     start_date = request.GET.get("startDate")
     end_date = request.GET.get("endDate")
-    product_wise_sales = {}  # Use a dictionary instead of a list
-    filtered_records = []  # Ensure it's always defined
-    total_value = 0  # Ensure it's always defined
-    total_vat = 0
-    total_discount = 0
-    sum_subtotal = 0
-    if start_date and end_date:
-        try:
-            filtered_records = SalesRecord.objects.filter(sale_date__date__range=(start_date, end_date))
-            total_value = "{0:.2f}".format(filtered_records.aggregate(total=Sum("netTotal"))["total"] or 0)
-            total_vat = "{0:.2f}".format(filtered_records.aggregate(vat=Sum("vatAmmount"))["vat"] or 0)
-            total_discount = "{0:.2f}".format(filtered_records.aggregate(discount=Sum("discountAmmount"))["discount"] or 0)
-            
-            for record in filtered_records:
-                for item in record.items.all():
-                    if item.productName in product_wise_sales: 
-                        product_wise_sales[item.productName]["quantity"] += item.quantity
-                        product_wise_sales[item.productName]["subtotal"] += item.subtotal
-                    else:
-                        product_wise_sales[item.productName] = {
-                            "quantity": item.quantity,
-                            "price": item.price,
-                            "subtotal": item.subtotal,
-                        }
-            for item in product_wise_sales.values():                
-                sum_subtotal += item['subtotal']
-            
-             # Debugging output
-        except Exception as e:
-            print(f"Error fetching sales report: {e}") 
 
+    product_wise_sales = defaultdict(lambda: {"quantity": 0, "price": 0, "subtotal": 0})
+    sale_by_dates = {}
+    filtered_records = SalesRecord.objects.none()
+    total_value = total_vat = total_discount = sum_subtotal = 0
+    
+    if end_date and start_date > end_date:
+            messages.error(request, f"Start Date can't be greater than End Date")
+            return redirect('dashboard')
+    if start_date:
+        
+        try:
+            filter_kwargs = {"sale_date__date": start_date} if not end_date else {"sale_date__date__range": (start_date, end_date)}
+            filtered_records = SalesRecord.objects.filter(**filter_kwargs)
+            dates = filtered_records.values_list("sale_date__date", flat=True).distinct()                
+            
+            if filtered_records.exists():
+                aggregates = filtered_records.aggregate(
+                    total=Sum("netTotal"), 
+                    vat=Sum("vatAmmount"), 
+                    discount=Sum("discountAmmount")
+                ) # 
+                sale_by_dates = {
+                    str(entry["sale_date__date"]): {
+                        "total_value_by_date": "{0:.2f}".format(entry["total_value_by_date"] or 0),
+                        "total_vat_by_date": "{0:.2f}".format(entry["total_vat_by_date"] or 0),
+                        "total_discount_by_date": "{0:.2f}".format(entry["total_discount_by_date"] or 0)
+                        }
+                for entry in (
+                filtered_records
+                .values("sale_date__date")
+                .annotate(total_value_by_date=Sum("netTotal"),
+                          total_vat_by_date=Sum("vatAmmount"),
+                          total_discount_by_date=Sum("discountAmmount")
+                          )
+                .order_by("sale_date__date"))
+                }
+                
+                total_value = "{0:.2f}".format(aggregates["total"] or 0)
+                total_vat = "{0:.2f}".format(aggregates["vat"] or 0)
+                total_discount = "{0:.2f}".format(aggregates["discount"] or 0)
+
+                for record in filtered_records:
+                    for item in record.items.all():
+                        product = product_wise_sales[item.productName]
+                        product["quantity"] += item.quantity
+                        product["subtotal"] += item.subtotal
+                        product["price"] = item.price  # Assuming price remains constant per product
+
+                sum_subtotal = sum(item["subtotal"] for item in product_wise_sales.values())
+
+        except Exception as e:
+            logger.error(f"Error fetching sales report: {e}")
+            return redirect("dashboard")
+
+    else:
+        return redirect("dashboard")
+    
+
+    storage = messages.get_messages(request)
+    storage.used = True 
     context = {
         "start_date": start_date,
         "end_date": end_date,
         "filtered_records": filtered_records,
-        "product_wise_sales": product_wise_sales,        
+        "product_wise_sales": dict(product_wise_sales),
+        "sale_by_dates": sale_by_dates,       
         "sum_subtotal": sum_subtotal,
         "total_vat": total_vat,
         "total_discount": total_discount,
         "total_value": total_value,
     }
     return render(request, "sales_report.html", context)
-
 #products View
 @login_required
 def products(request):
@@ -497,7 +521,7 @@ def sales_record(request):
     elif query_invoice:
         if sales_records.filter(salesId=query_invoice):
             filtered_records = sales_records.filter(salesId=query_invoice)
-            messages.success(request, f"Invoice Number: {query_invoice}</b>")
+            messages.success(request, f"Found record for Invoice Number: {query_invoice}!</b>")
         else:
             messages.error(request, f"No record found for Invoice #<b>{query_invoice}</b>")    
 

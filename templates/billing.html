@@ -144,14 +144,14 @@
             <div class="row mb-3">
                 <label for="vatPercent" class="col-sm-3 col-form-label text-lg-end">VAT (%):</label>
                 <div class="col-sm-9">
-                    <input type="number" class="form-control" id="vatPercent" name="vatPercent" placeholder="Enter VAT (%)" required> 
+                    <input type="number" class="form-control vat-dis" id="vatPercent" name="vatPercent" placeholder="Enter VAT (%)" value="0" min="0" required> 
                 </div>
             </div>
 
             <div class="row mb-3 d-d-md-flex justify-content-md-center justify-content-sm-center">
                 <label for="discountPercent" class="col-sm-3 col-form-label text-lg-end">Discount (%):</label>
                 <div class="col-sm-9">
-                    <input type="number" class="form-control" id="discountPercent" name="discountPercent" placeholder="Discount" required>
+                    <input type="number" class="form-control vat-dis" id="discountPercent" name="discountPercent" placeholder="Discount" value="0" min="0" required>
                    
                 </div>
                
@@ -160,10 +160,11 @@
             <div class="row mb-3">
                 <label for="customerPhone" class="col-sm-3 col-form-label text-lg-end">Customer Phone:</label>
                 <div class="col-sm-9">
-                    <div class="form-control focus-ring-primary d-flex align-items-center">
-                        <span class="me-1">+880</span>
-                        <input type="number" class="border-0 flex-grow-1" maxlength="11" minlength="10" id="customerPhone" name="customerPhone" placeholder="Enter Customer Phone" required>
-                    </div>
+                    <div class="input-group mb-3">
+                        <span class="input-group-text bg-white" id="basic-addon1">+880</span>
+                        <input type="number" class="form-control" maxlength="11" minlength="10" id="customerPhone" name="customerPhone" placeholder="Enter Customer Phone" required>
+                      </div>
+                    
                 </div>
             </div>
             
@@ -223,7 +224,6 @@
     
     {% endif %}
 </div>
-
 
 
 
@@ -341,6 +341,27 @@
     
         // Initial calculation of total when page loads
         calculateTotal();
+        document.querySelectorAll(".vat-dis").forEach(input => {
+            input.addEventListener("focus", function () {
+                remZero(this);
+            });
+            input.addEventListener("blur", function () {
+                addZero(this);
+            });
+
+        });
+        
+        function remZero(input) {
+            if (input.value == 0) {
+                input.value = "";
+            }
+        }
+        
+        function addZero(input) {
+            if (input.value == "") {
+                input.value = 0;
+            }
+        }
     });
     
     
