@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sales Report</title>
+    <title>Sales Report - {{ start_date }} {% if end_date %}to {{ end_date }}{% endif %}</title>
     
     <!-- Bootstrap CSS -->
     <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
@@ -18,6 +18,31 @@
         .print-btn:hover, .back-btn:hover{
             opacity: 100%;
         }
+        fieldset.title {
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            width: 100%;
+        }
+        
+        legend {
+            display: flex;
+            align-items: center;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        
+        legend::before,
+        legend::after {
+            content: "";
+            flex: 1;
+            height: 1px;
+            background-color: #aaa;
+            margin: 0 10px;
+        }
+        
         @media print {
             body {
                 font-family: Arial, Helvetica, sans-serif;
@@ -52,33 +77,119 @@
             .print-btn, .back-btn{
                 display: none !important;
             }
+            .date-wise{
+                margin-bottom : 50vh;
+            }
             
         }
     </style>
 </head>
 <body class="bg-white">
     <div class="text-end">
-        <p class="fs-6">This Report is Automatically Generated On <strong>{{date_today}}</strong></p>
+        <p class="fs-6 fst-italic">This Report is Automatically Generated On <strong>{{date_today}}</strong></p>
     </div>
-    <div class="main mt-4 bg-white">
-        <div class="text-center">
+    <div class="main mt-2 bg-white">
+        <div class="text-center header">
             <h1 class="fw-bolder">Super Shop Management System</h1>
             {% if start_date and end_date %}
-            <p class="fs-4 fst-italic">Sales Report from <b>{{ start_date }}</b> to <b>{{ end_date }}</b></p>
+            <p class="fs-4 fst-italic">Sales Report from <b>"{{ start_date }}"</b> to <b>"{{ end_date }}"</b></p>
             {% elif start_date and not end_date %}
-            <p class="fs-4 fst-italic">Sales Report for <b>{{ start_date }}</b></p>
+            <p class="fs-4 fst-italic">Sales Report for <b>"{{ start_date }}"</b></p>
+            {% endif %}
+            <hr width="100%">
+        </div>
+
+
+        <!-- Brief Summary -->
+        <div class="mt-4 mb-3">
+            
+            <!-- Table -->
+            <div class="table-responsive justify-content-center ">
+                <div class="title text-center">
+                    <p class="h4 fw-bold text-dark-emphasis">Short Summary</p>
+                </div>
+
+                <table class="table table-bordered border-2  text-center align-middle table-striped">
+                    <tbody>
+                        {% if total_vat is not None and total_discount is not None and total_value is not None %}
+                        <tr class="fs-5 align-middle">
+                            <td class="align-middle w-25"><strong>Total Customers</strong></td>
+                            <td>{{ total_customers }}</td>
+                        </tr>
+                        <tr class="fs-5 align-middle">
+                            <td class="align-middle w-25"><strong>Total Sales</strong></td>
+                            <td>{{ total_sales }}</td>
+                        </tr>
+                        <tr class="fs-5 align-middle">
+                            <td class="align-middle w-25"><strong>VAT Collected</strong></td>
+                            <td>(+) {{ total_vat }} TK</td>
+                        </tr>
+                        <tr class=" fs-5"> 
+                            <td class=""><strong>Discount Given</strong></td>
+                            <td>(-) {{ total_discount }} TK</td>
+                        </tr>
+                        <tr class=" fs-5 align-middle fw-bold">
+                            <td class=""><strong>Total Value</td>
+                            <td>{{ total_value }} TK</td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="2" class="text-center text-muted">No summary available</td>
+                        </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+
+        <!--Date wise Report-->
+        <div class="mt-4 date-wise mb-3">
+            
+            {% if end_date %}
+
+            <div class="text-center">
+                <div class="title text-center">
+                    <p class="h4 fw-bold text-dark-emphasis">Date Wise Sales Summary</p>
+                </div>
+                <table class="table table-bordered table-striped">
+                    
+                    <thead class="table-primary ">                        
+                        <th>Date</th> 
+                        <th>Sales</th>
+                        <th>Custmers</th>        
+                        <th>Total Value</th>            
+                        <th>VAT</th>
+                        <th>Discount</th>
+                        <th>Grand Value</th>
+                    </thead>
+                    <tbody>
+                        {% for date, value in sale_by_dates.items %}
+                        <tr>
+                            <td>{{date}}</td>
+                            <td>{{value.total_sales_count_by_date}}</td>
+                            <td>{{ value.total_customers_by_date }}</td>
+                            <td>{{value.subtotal_value_by_date}} TK</td>                 
+                            <td>(+) {{value.total_vat_by_date}} TK</td>
+                            <td>(-) {{value.total_discount_by_date}} TK</td>
+                            <td>{{value.total_value_by_date}} TK</td>
+                            
+                        </tr>                        
+                        {% endfor %}
+                        
+                    </tbody>
+                </table>        
+              
+            </div>
             {% endif %}
         </div>
-       
-        <div class="mt-3 ">
-            {% comment %} <div class="d-flex justify-content-center">
-                <p class="fs-5 fw-bold">Net Total: {{ total_value }} TK</p>
-            </div> {% endcomment %}
+        <!--Product Wise-->
+        <div class="product-wise mt-4">
             <div class="title text-center">
                 <p class="h4 text-dark-emphasis fw-bold">Product Wise Sales Summary</p>
             </div>
             <div class="table-responsive">                
-                <table class="table table-bordered text-center">                    
+                <table class="table table-bordered text-center align-middle">                    
                     <thead class="table-primary">
                         <tr class="fs-6">
                             <th>SL.</th>
@@ -94,78 +205,91 @@
                             <td class="fw-bold">{{forloop.counter}}.</td>
                             <td>{{ key }}</td>
                             <td>{{ value.quantity }}</td>
-                            <td>{{ value.price }} TK</td>
+                            <td class="h6">
+                                
+                                {% for price,qty in value.prices.items %}
+                                 {% comment %} <table class="table table-bordered"><tbody class="gap-0"><tr class="mb-0 mt-0"><td>{{qty}} Unit(s)</td><td> {{ price }} TK </td></tr></tbody></table> {% endcomment %}
+                                    <div class="table align-middle">
+                                        <div class="row row-cols-3 p-0 m-0">
+                                            <div class="col">{{qty}} Unit(s)</div>
+                                            <div class="col">-</div>                                      
+                                            <div class="col"> {{ price }} TK </div>                                            
+                                        </div>
+                                        {% if forloop.last %}
+
+                                        {% else %}
+                                            <hr>
+                                        {% endif %}
+                                    </div>
+                                 
+                                 {% endfor %}
+                            </td>
                             <td>{{ value.subtotal }} TK</td>
+                            
                         </tr>
                         {% empty %}
                         <tr>
                             <td colspan="4" class="text-danger h4">No Records Found</td>
                         </tr>
                         {% endfor %}
-
-                        {% if sum_subtotal and total_vat and total_discount and total_value %}
-                        <tr class="table-warning fs-5 align-middle">
-                            <td class="text-end" colspan="4"><strong>Total</strong></td>
-                            <td>{{ sum_subtotal }} TK</td>
-                        </tr>
-                        <tr class="fs-5 align-middle">
-                            <td class="text-end" colspan="4"><strong>Total VAT</strong></td>
-                            <td>{{ total_vat }} TK</td>
-                        </tr>
-                        <tr class="fs-5"> 
-                            <td class="text-end align-middle" colspan="4"><strong>Total Discount</strong></td>
-                            <td>{{ total_discount }} TK</td>
-                        </tr>
-                        <tr class="table-success fs-4 align-middle">
-                            <td class="text-end" colspan="4"><strong>Net Total</strong></td>
-                            <td>{{ total_value }} TK</td>
-                        </tr>
-                        {% else %}
-                        <hr>
+                        {% if sum_subtotal %}
+                            <tr class="table-warning fs-5 align-middle">
+                                <td class="text-end" colspan="4"><strong>Total</strong></td>
+                                <td>{{ sum_subtotal }} TK</td>
+                            </tr>                     
                         {% endif %}
                     </tbody>
                 </table>
             </div>
-            <!--Date wise-->
-        {% if end_date %}
-            <br><br><br><br><br><br><br><br><br><br><br>
-            <div class="text-center mb-4 mt-5">
-                <div class="title text-center">
-                    <p class="h4 fw-bold text-dark-emphasis">Date Wise Sales Summary</p>
-                </div>
-                <table class="table table-bordered">
-                    <thead class="table-primary ">
-                        <th>Date</th>                        
-                        <th>Total VAT</th>
-                        <th>Total Discount</th>
-                        <th>Total</th>
+        </div>      
+
+        <!--Customer Report-->
+        <div class="customer-report mt-4">
+            <div class="title text-center">
+                <p class="h4 text-dark-emphasis fw-bold">Customers Summary</p>
+            </div>
+            <div class="table-responsive">                
+                <table class="table table-bordered text-center align-middle">                    
+                    <thead class="table-primary">
+                        <tr class="fs-6">
+                            <th>SL.</th>
+                            <th>Customer Phone</th>    
+                            <th>Total Purchased</th>
+                            <th>Total Purchases Value</th>
+                            
+                        </tr>
                     </thead>
                     <tbody>
-                        {% for date, value in sale_by_dates.items %}
-                        <tr>
-                            <td>{{date}}</td>                            
-                            <td>{{value.total_vat_by_date}} TK</td>
-                            <td>{{value.total_discount_by_date}} TK</td>
-                            <td>{{value.total_value_by_date}} TK</td>
+                        {% for customer in customer_report %}
+                        <tr class="fs-6">
+                            <td class="fw-bold">{{forloop.counter}}.</td>
+                            <td>+880 {{ customer.customer }}</td>
+                            <td>{{ customer.purchases }}</td>                            
+                            <td>{{ customer.purchase_value|floatformat:2 }} TK</td>
+                            
                         </tr>
-                        
-                        {% endfor %}
-                        
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-danger h4">No Records Found</td>
+                        </tr>
+                        {% endfor %}                
                     </tbody>
-                </table>        
-                <hr>
-                <br><br><br>        
+                </table>
             </div>
-        {% endif %}
-        </div>
-
-        
+        </div>      
     </div>
+    <div class="justify-content-center text-center d-inline">
+        <fieldset class="title">
+            <legend><span>END OF REPORT</span></legend>
+        </fieldset>
+    </div>
+    
+    
     <div class="text-center position-fixed top-0 end-0 mt-4 me-2">
         <button class="btn btn-danger rounded-5 print-btn" onclick="window.print()">Print Report</button>
     </div>
     <div class="text-center position-fixed top-0 start-0 mt-4 ms-2">
-        <button class="btn btn-secondary rounded-5 back-btn" onclick="history.back()">Go Back</button>
+        <button class="btn btn-dark rounded-5 back-btn" onclick="history.back()">Go Back</button>
     </div>
     <!-- Bootstrap JS -->
     <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>

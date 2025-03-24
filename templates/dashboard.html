@@ -11,7 +11,7 @@
     <p class="h2 text-dark-emphasis"><b>User :</b> @{{user.username}}<p>
 </div>
 {% if user.is_superuser %}
-    <a href="#" class="btn btn-primary fs-4 position-fixed bottom-0 end-0 translate-middle-y">
+    <a href="#" class="btn btn-primary fs-4 position-fixed bottom-0 end-0 translate-middle-y" id="btn-back-to-top">
         <span class="material-symbols-outlined">arrow_upward</span>
     </a>
   
@@ -44,14 +44,20 @@
                             </div>
                             <div class="modal-body justify-content-center">
                                 <div class="form-container">
-                                    <form class="form d-flex flex-column gap-1" action="{% url "sales_report" %}" method="get" target="{% for message in messages %}{% if message.tags == "error" %}_parent{% else %}_blank{% endif %}{% endfor %}">
+                                    <form class="form d-flex flex-column gap-2" action="{% url "sales_report" %}" method="get" target="{% for message in messages %}{% if message.tags == "error" %}_parent{% else %}_blank{% endif %}{% endfor %}">
+                                        
+                                        <label class="form-label text-primary fs-6" for="monthInput">Select Month & Year for Monthly Report</label>
+                                        <input class="form-control" type="month" id="monthInput" placeholder="mm/yyyy" onchange="pushDate()">
 
-                                        <input class="form-control" type="month" id="monthInput" placeholder="Select Month " onchange="pushDate()">
-                                        <label class="form-label text-primary fs-5" or="startDate">From:</label>
+                                        <label class="form-label text-primary fs-5" for="startDate">From:</label>
                                         <input class="form-control" type="date" name="startDate" id="startDate" required>
-                                        <label class="form-label text-primary fs-5" or="endDate">To (optional):</label>
-                                        <input class="form-control" type="date" name="endDate" id="endDate" >
-                                        <button class="btn btn-primary" type="submit" id="genButton">Generate Report</button>
+                                        
+                                        <label class="form-label text-primary fs-5" for="endDate">To (optional):</label>
+                                        <label class="form-label text-primary-emphasis fs-6 text-center" for="endDate">(Keep empty for single day report)</label>  
+                                                                                
+                                        <input class="form-control" type="date" name="endDate" id="endDate" title="Keep empty for single day report"/>
+
+                                        <button class="btn btn-primary mt-1" type="submit" id="genButton">Generate Report</button>
                                         
                                     </form>
                                 </div>
@@ -77,24 +83,26 @@
                             <tbody>
                                 <tr class="w-100">
                                     <th class="position-sticky start-0 table-active">Day</th>
-                                    {% for days in last_seven_days %}
-                                        <td class=>{{ days }}</td> 
+                                    {% for day in last_seven_days %}
+                                        <td>{{ day }}</td> 
                                     {% endfor %}
                                 </tr>
-                                <tr class="w-100 ">
+                                <tr class="w-100">
                                     <th class="position-sticky start-0 table-active">Values</th>
-                                    {% for value in  total_last_seven_days %}
+                                    {% for value in total_last_seven_days %}
                                         <td>৳{{ value }}</td>
                                     {% endfor %}
                                 </tr>
-                                <tr class="w-100 ">
+                                <tr class="w-100">
                                     <th class="position-sticky start-0 table-active align-middle">Total</th>
-                                    <td colspan="7" class="text-center fw-bold "><p class="position-sticky start-50 top-50 align-middle">৳{{ sum_last_seven_days_value }}</p></td>
+                                    <td colspan="{{ last_seven_days|length }}" class="text-center fw-bold">
+                                        <span>৳{{ sum_last_seven_days_value }}</span>
+                                    </td>
                                 </tr>
-            
                             </tbody>            
                         </table>
                     </div>
+                    
                    
                 </div>
                 
@@ -199,6 +207,25 @@
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+<script>
+    let mybutton = document.getElementById("btn-back-to-top");
+
+    // When the user scrolls down 20px from the top of the document, show the button
+    window.onscroll = function () {
+    scrollFunction();
+    };
+
+    function scrollFunction() {
+    if (
+        document.body.scrollTop > 20 ||
+        document.documentElement.scrollTop > 20
+    ) {
+        mybutton.style.display = "block";
+    } else {
+        mybutton.style.display = "none";
+    }
+    }
+</script>
 <script>
 document.addEventListener("DOMContentLoaded", function () {
     // Convert Django lists into JavaScript arrays

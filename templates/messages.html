@@ -7,7 +7,7 @@
           <small>Now</small>
           <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
         </div>
-        <div class="toast-body h5 fw-bold {% if message.tags == 'success' %}text-success {% elif message.tags == 'info' %}text-info{% else %}text-danger{% endif %}">
+        <div class="toast-body h5 fw-bold {% if message.tags == 'success' %}text-success {% elif message.tags == 'info' %}text-info {% elif message.tags == 'warning' %}text-warning{% else %}text-danger{% endif %}">
           {{ message|safe }}
         </div>
       </div>

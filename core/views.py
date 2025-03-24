@@ -11,7 +11,9 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.urls import reverse
 from django.core.paginator import Paginator
-from django.db.models import Sum
+from django.db.models import Sum, Count
+
+# from django.db.models.functions import Round
 from datetime import date, datetime, timedelta
 
 from decimal import Decimal
@@ -90,21 +92,21 @@ def sales_report(request):
     start_date = request.GET.get("startDate")
     end_date = request.GET.get("endDate")
 
-    product_wise_sales = defaultdict(lambda: {"quantity": 0, "price": 0, "subtotal": 0})
+    product_wise_sales = defaultdict(lambda: {"quantity": 0, "prices": {}, "subtotal": 0})
     sale_by_dates = {}
     filtered_records = SalesRecord.objects.none()
-    total_value = total_vat = total_discount = sum_subtotal = 0
+    total_value = total_vat = total_discount = sum_subtotal = total_customers = total_sales = 0
     
-    if end_date and start_date > end_date:
-            messages.error(request, f"Start Date can't be greater than End Date")
+    if end_date and start_date >= end_date:
+            messages.error(request, f"Start Date can't be greater than or Equal to End Date")
             return redirect('dashboard')
     if start_date:
         
         try:
             filter_kwargs = {"sale_date__date": start_date} if not end_date else {"sale_date__date__range": (start_date, end_date)}
             filtered_records = SalesRecord.objects.filter(**filter_kwargs)
-            dates = filtered_records.values_list("sale_date__date", flat=True).distinct()                
-            
+                           
+           
             if filtered_records.exists():
                 aggregates = filtered_records.aggregate(
                     total=Sum("netTotal"), 
@@ -113,18 +115,24 @@ def sales_report(request):
                 ) # 
                 sale_by_dates = {
                     str(entry["sale_date__date"]): {
+                        "total_sales_count_by_date": entry["total_sales_count_by_date"],
+                        "total_customers_by_date": entry["total_customers_by_date"],
                         "total_value_by_date": "{0:.2f}".format(entry["total_value_by_date"] or 0),
                         "total_vat_by_date": "{0:.2f}".format(entry["total_vat_by_date"] or 0),
-                        "total_discount_by_date": "{0:.2f}".format(entry["total_discount_by_date"] or 0)
+                        "total_discount_by_date": "{0:.2f}".format(entry["total_discount_by_date"] or 0),
+                        "subtotal_value_by_date": "{0:.2f}".format(entry["total_value_by_date"] + entry["total_discount_by_date"] - entry["total_vat_by_date"] or 0),
                         }
-                for entry in (
-                filtered_records
-                .values("sale_date__date")
-                .annotate(total_value_by_date=Sum("netTotal"),
-                          total_vat_by_date=Sum("vatAmmount"),
-                          total_discount_by_date=Sum("discountAmmount")
-                          )
-                .order_by("sale_date__date"))
+                        for entry in (
+                        filtered_records
+                        .values("sale_date__date")
+                        .annotate(
+                                total_sales_count_by_date=Count("salesId"),
+                                total_customers_by_date=Count("customer"),
+                                total_value_by_date=Sum("netTotal"),
+                                total_vat_by_date=Sum("vatAmmount"),
+                                total_discount_by_date=Sum("discountAmmount")
+                                )
+                        .order_by("sale_date__date"))
                 }
                 
                 total_value = "{0:.2f}".format(aggregates["total"] or 0)
@@ -136,17 +144,33 @@ def sales_report(request):
                         product = product_wise_sales[item.productName]
                         product["quantity"] += item.quantity
                         product["subtotal"] += item.subtotal
-                        product["price"] = item.price  # Assuming price remains constant per product
-
+                        if "prices" not in product:
+                            product["prices"] = {item.price: item.quantity}  # Store price with its respective quantity
+                        else:
+                            if item.price in product["prices"]:
+                                product["prices"][item.price] += item.quantity
+                            else:
+                                product["prices"][item.price] = item.quantity
+                    
                 sum_subtotal = sum(item["subtotal"] for item in product_wise_sales.values())
-
+                customer_report = filtered_records.values("customer").annotate(purchases=Count("customer"), purchase_value=Sum("netTotal")).order_by("-purchases")
+                total_customers = customer_report.count()
+                total_sales = filtered_records.count()
+                
+                
+            else:
+                msg_body = f"{start_date}" if not end_date else f"{start_date} to {end_date}"
+                messages.error(request, f"No Records found for {msg_body}")
+                return redirect("dashboard")
         except Exception as e:
             logger.error(f"Error fetching sales report: {e}")
-            return redirect("dashboard")
+            messages.error(request, f"Something Went Wrong!!!")
+            return redirect('dashboard')
 
     else:
+        messages.error(request, f"Start Date is Empty!!")
         return redirect("dashboard")
-    
+   
 
     storage = messages.get_messages(request)
     storage.used = True 
@@ -154,7 +178,10 @@ def sales_report(request):
         "start_date": start_date,
         "end_date": end_date,
         "filtered_records": filtered_records,
-        "product_wise_sales": dict(product_wise_sales),
+        "product_wise_sales": dict(sorted(product_wise_sales.items(), key=lambda item: item[1]["subtotal"], reverse=True)),
+        "customer_report": customer_report,
+        "total_customers": total_customers,
+        "total_sales": total_sales,
         "sale_by_dates": sale_by_dates,       
         "sum_subtotal": sum_subtotal,
         "total_vat": total_vat,
@@ -166,7 +193,7 @@ def sales_report(request):
 @login_required
 def products(request):
     logged_in_user = request.user
-    products = Inventory.objects.all()
+    products = Inventory.objects.all().order_by("stock")
     empty_barcodes = Barcodes.objects.filter(is_assigned = False).first()
     paginator = Paginator(products, 10)
     # print(products.filter(productName="pran mama wafer biscuit".upper()))
@@ -180,7 +207,10 @@ def products(request):
                 query_name = query_name.strip()
                 products = Inventory.objects.filter(productName__icontains=query_name)
                 paginator = Paginator(products, 10)
-                messages.info(request, f"Found {products.count()} products by the keyword '{query_name}'")
+                if products.exists():
+                    messages.info(request, f"Found {products.count()} products by the keyword '{query_name}'")
+                else:
+                    messages.warning(request, f"No products found by the keyword '{query_name}'")
             elif query_barcode:
                 products = Inventory.objects.filter(barcode=query_barcode)
                 paginator = Paginator(products, 10)
@@ -214,7 +244,7 @@ def products(request):
                     else:
                         custom_barcodes = Barcodes.objects.filter(barcodes=barcode).first() #check if barcode exists
                         Inventory.objects.create(productName=product_name, barcode=barcode, price=price, stock=stock, createdBy=logged_in_user, updatedBy=logged_in_user) #This is the line 
-                        messages.success(request, f"Product: {product_name} added successfully!")
+                        messages.success(request, f"Product: <b>{product_name}</b> added successfully!")
                         if custom_barcodes:
                             rv = BytesIO()
                             Code39(barcode, writer=SVGWriter(), add_checksum=False).write(rv)
@@ -230,7 +260,7 @@ def products(request):
                     messages.error(request, "Invalid price or barcode!")
             else:
                 messages.error(request, "Fill every details of the product")
-            return redirect('products')
+            
              
     # Show 10 records per page
     page_number = request.GET.get('page')  # Get the current page number from query params
@@ -259,18 +289,33 @@ def custom_barcodes(request):
 
 @login_required
 def delete_item(request, productId):
+    custom_barcodes = Barcodes.objects.filter(is_assigned=True)
+    assigned_custom_barcodes = set([barcode.barcodes for barcode in custom_barcodes])
     if request.method == "POST":
         item = get_object_or_404(Inventory, productId=productId)
         item.delete()
-        messages.success(request, "Product deleted successfully!")
+        if item.barcode in assigned_custom_barcodes:
+            custom_barcodes = Barcodes.objects.get(barcodes=item.barcode)
+            custom_barcodes.product = ""
+            custom_barcodes.is_assigned = False
+            custom_barcodes.barcode_svg = ""
+            custom_barcodes.save()
+        
+        
+        
+        messages.success(request, f"Product <b>{item.productName}</b> deleted successfully!")
     return redirect("products")  
 
 
 @login_required
 def edit_item(request, productId):
     logged_in_user = request.user
-    
+    all_products_barcodes = Inventory.objects.all().values_list("barcode", flat=True)
+   
     products = get_object_or_404(Inventory, productId=productId)
+    all_products_barcodes_list = (list(all_products_barcodes))
+    all_products_barcodes_list.remove(products.barcode)
+    
     if request.method == "POST":
         updated_name = request.POST.get('updated_name')
         updated_barcode = request.POST.get('updated_barcode')
@@ -282,14 +327,16 @@ def edit_item(request, productId):
                 barcode = str(updated_barcode)
                 price = float(updated_price)
                 stock = int(updated_stock)
-
-                products.productName = updated_name
-                products.barcode = barcode
-                products.price = price
-                products.stock = stock
-                products.updatedBy = logged_in_user
-                products.save()
-                messages.success(request, "Product updated successfully!")                    
+                if barcode in all_products_barcodes_list:
+                    messages.error(request, "Barcode assigned with another product!!")
+                else:                    
+                    products.productName = updated_name
+                    products.barcode = barcode
+                    products.price = price
+                    products.stock = stock
+                    products.updatedBy = logged_in_user
+                    products.save()
+                    messages.success(request, "Product updated successfully!")                    
             except ValueError:
                 messages.error(request, "Invalid price or barcode!")
         else:
