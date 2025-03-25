@@ -6,7 +6,7 @@ from django.utils.timezone import activate
 from django.contrib.auth.views import LoginView
 from .models import Inventory, Barcodes, SalesRecord, Customer, SalesItem
 
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.urls import reverse
@@ -23,6 +23,8 @@ from barcode.writer import SVGWriter
 from collections import defaultdict
 import logging
 
+def admin_only(user):
+    return user.is_authenticated and user.is_superuser
 #Index/Home/Login View
 class CustomLoginView(LoginView):
     template_name = 'home.html' 
@@ -87,7 +89,9 @@ def dashboard(request):
 
 logger = logging.getLogger(__name__)
 
+
 @login_required
+@user_passes_test(admin_only, login_url="dashboard")
 def sales_report(request):
     start_date = request.GET.get("startDate")
     end_date = request.GET.get("endDate")
@@ -351,7 +355,7 @@ def edit_item(request, productId):
 def billing(request):
     user = request.user #get_logged_in_user
     
-    products = Inventory.objects.all()
+    products = Inventory.objects.all().order_by("productName")
     scanned_items = request.session.get('scanned_items', [])  # Retrieve stored items
     calculated_data = None
     if request.method == 'POST':

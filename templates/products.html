@@ -24,6 +24,7 @@
   <div class="container mt-4 p-4 bg-body shadow-lg rounded">
     <div class="d-flex justify-content-center p-3 mb-2">
         <h1 class="text-primary text-center">Inventory</h1>     
+        {% include "back-btn.html" %}
     </div>
      
      
@@ -124,7 +125,7 @@
                     <th>Price (BDT)</th>
                     <th>Stock</th>
                     {% if user.is_superuser %}
-                    <th>Created</th>
+                    <th>Added</th>
                     <th>Updated</th>
                     {% endif %}
                     <th class="position-sticky end-0 table-info"><span class="material-icons">build</span></th>
@@ -228,6 +229,7 @@
         </nav>
   </div>
 </div>
+
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         const params = new URLSearchParams(window.location.search);

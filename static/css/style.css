@@ -31,6 +31,12 @@ body {
   border-radius: 25px;
   transition: 0.5s;
 }
+.back-btn{
+  opacity: 30% !important;
+}
+.back-btn:hover{
+  opacity: 100% !important;
+}
 
 @media screen and (max-width: 1000px) {
   .navbar-custom .nav-link{
@@ -50,6 +56,7 @@ footer {
   max-width: 100%;
   width: 100%;
   text-align: center;
+  position: relative;
 }
 footer .nav-item .nav-link {
   color:#ffffff;
@@ -65,3 +72,4 @@ footer .nav-item .nav-link:hover {
   background-color: #077807;
   text-decoration: none;
 }
+

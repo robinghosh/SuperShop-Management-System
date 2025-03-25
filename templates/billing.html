@@ -43,27 +43,32 @@
                 <input type="hidden" name="form_type" value="form1">
                 
                 <div class="form-group mb-2 text-center">
-                    <label class="h5 text-primary fw-b" for="barcodeInput">Enter Product's Barcode or Select Directly</label>
-                    <div class="d-flex justify-content-center gap-2 border border-2 rounded">
-                        <span class="d-flex justify-content-around ">
-                            <input type="text" class="form-control me-1 " id="barcodeInput" placeholder="Enter Barcode" name="barcode" autofocus>
-                            <select class="dropdown border border-tertiary rounded focus-ring focus-ring-success w-25 form-select form-select-color" id="productSelect" name="productSelect" onchange="fillBarcode()">
+                    <label class="h6 text-primary fw-b" for="barcodeInput">Enter Product's Barcode or Select Directly</label>
+                    <div class="d-flex justify-content-center gap-2 rounded">
+                        <span class="d-flex  justify-content-around input-group z-0">
+                            <input type="text" class="form-control w-75" id="barcodeInput" placeholder="Enter Barcode" name="barcode" autofocus>
+                            <select class="dropdown form-select form-select-color focus-ring focus-ring-success" id="productSelect" name="productSelect" onchange="fillBarcode()">
                                 <option class="text-secondary fw-bold" selected="selected" disabled>Select</option>
-                                {% for product in products %}
-                                    {% if product.stock == 0 or product.stock < 0 %}
-                                        <option class="" data-barcode="{{ product.barcode }}" disabled>{{ product.productName }} (Out Of stock)<hr></option>
-                                        
-                                    {% else %}
-                                        <option class="" data-barcode="{{ product.barcode }}">{{ product.productName }} (<b>In Stock: {{ product.stock }})</b><hr width="100%" size="5" color="blue" noshade></option>
-                                        
+
+                                <optgroup name="inStock" label="In Stock">
+                                    {% for product in products %}                                    
+                                    {% if product.stock > 0 %}
+                                    <option class="" data-barcode="{{ product.barcode }}">{{ product.productName }} (<b>In Stock: {{ product.stock }})</b><hr width="100%" size="5" color="blue" noshade></option>
                                     {% endif %}
-                                    
-                                {% endfor %}                             
+                                    {% endfor %}
+                                </optgroup>
+                                <optgroup name="outOfStock" label="Out of Stock">  
+                                    {% for product in products %}                                    
+                                    {% if product.stock == 0 or product.stock < 0 %} 
+                                    <option class="" data-barcode="{{ product.barcode }}" disabled>{{ product.productName }} (Out Of stock)<hr></option>
+                                    {% endif %}
+                                    {% endfor %} 
+                                </optgroup>                             
                             </select>
                         </span>  
                 
                     </div>
-                    <button class="btn btn-primary w-25 mt-2" id="addproductButton" type="submit" title="Add Product to Billing">Add</button>
+                    <button class="btn btn-primary  mt-2" id="addproductButton" type="submit" title="Add Product to Billing">Add</button>
                 </div>
 
                 
@@ -224,7 +229,7 @@
     
     {% endif %}
 </div>
-
+{% include "back-btn.html" %}
 
 
 <script> 

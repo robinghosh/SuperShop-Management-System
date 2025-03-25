@@ -7,23 +7,22 @@
 {% block content %}
 {% include "messages.html" %}
 <div class="d-flex align-items-center justify-content-center flex-column mb-0">
-    <p class="h1 fw-bold text-primary text-center">Super Shop Management System</p>
+    <p class="fs-1 fw-semibold text-primary text-center">Super Shop Management System</p>
     <p class="h2 text-dark-emphasis"><b>User :</b> @{{user.username}}<p>
 </div>
 {% if user.is_superuser %}
-    <a href="#" class="btn btn-primary fs-4 position-fixed bottom-0 end-0 translate-middle-y" id="btn-back-to-top">
-        <span class="material-symbols-outlined">arrow_upward</span>
-    </a>
+    {% include "top-btn.html" %}
   
     <div class="d-flex align-items-center justify-content-center mb-5">
-        <div class="w-100 bg-body p-4 rounded shadow justify-content-center">        
+        <div class="w-100 bg-body p-4 rounded shadow justify-content-center">
             <p class="h2 fw-bold text-center text-primary">Sales Report</p>
 
             <div class="justify-content-center ">
                 <div class="d-flex justify-content-between mx-3">
-                    <div class="">
-                        <a class="btn btn-secondary" href="#sevenDays">7 Days</a>   
-                        <a class="btn btn-secondary" href="#thirtyDays">30 Days</a> 
+                    <div class="">                        
+                        <a class="btn btn-outline-danger position-sticky top-0" href="#main-menu" title="Go to Main Menue">Main Menu↴</a> 
+                        <a class="btn btn-outline-primary position-sticky top-0" href="#sevenDays" title="Go to 7 Days Report">7 Days↴</a>   
+                        <a class="btn btn-outline-success position-sticky top-0" href="#thirtyDays" title="Go to 30 Days Report">30 Days↴</a> 
                     </div>                    
                     <div class="">
                         <button type="button" class="btn bg-primary text-white btn-sm " data-bs-toggle="modal" data-bs-target="#printReportModal" title="Sales Report">
@@ -70,15 +69,15 @@
             </div>             
             <div class="container-fluid mt-2">
                 <!--7 Days report-->
-                <div class="overflow-x-auto border border-3 border-secondary-subtle  rounded">
-                    
+                <div class="overflow-x-auto border border-3 border-secondary-subtle  rounded" id="sevenDays">
+                    <a href="{% url "sales_report" %}?startDate={{ last_seven_days|last }}&endDate={{ last_seven_days|first }}" class="btn btn-primary m-1" title="Full 7 Days Sales Report" target="_blank">Full Report</a>
                     <!--Chart-->
                     {% comment %} <p class="h5 text-primary ms-2 fw-bold">Chart</p>                     {% endcomment %}
                     <canvas class="w-100" id="sevenDaysSalesChart"></canvas>
 
                     <p class="h5 text-primary ms-2 fw-bold">Table: Last 7 days Sales Report</p>
                     <!--Table-->
-                    <div class="overflow-x-auto" id="seveDays"> 
+                    <div class="overflow-x-auto"> 
                         <table class="table table-bordered table-hover text-center table-light">
                             <tbody>
                                 <tr class="w-100">
@@ -109,8 +108,9 @@
                 <hr style="height:2px;border-width:0;color:gray;background-color:gray">
                 <!--30 days sales report-->
                 <div class="border border-3 border-secondary-subtle rounded " id="thirtyDays"> 
-                                        
+                    <a href="{% url "sales_report" %}?startDate={{ last_thirty_days|last }}&endDate={{ last_thirty_days|first }}" class="btn btn-primary m-1" target="_blank">Full Report</a>                   
                     {% comment %} <p class="h5 text-primary ms-2 fw-bold">Chart</p> {% endcomment %}
+                    <!--Chart-->
                     <canvas class="w-100" id="thirtyDaysSalesChart"></canvas>
 
                     <p class="h5 text-primary ms-2 fw-bold" id="seveDays">Table: Last 30 days Sales Report</p>
@@ -143,61 +143,61 @@
     </div>    
    
 {% endif %}
-<div class="d-flex align-items-center justify-content-center" >
+<div class="d-flex align-items-center justify-content-center main-menu" id="main-menu">
     <div class="w-75 bg-light p-4 rounded shadow">
         <h1 class="mb-5 text-primary">Main Menu</h1>
-    <div class="row row-cols-1 row-cols-md-2 g-4 justify-content-center">
-        <!-- Card 1 -->
-        <div class="col">
-            <a href="{% url "products" %}" class="text-decoration-none">
-                <div class="card h-100 shadow-sm">
+        <div class="row row-cols-1 row-cols-md-2 g-4 justify-content-center">
+            <!-- Card 1 -->
+            <div class="col">
+                <a href="{% url "products" %}" class="text-decoration-none">
+                    <div class="card h-100 shadow-sm">
 
-                    {% comment %} <img src="{% static "images/product_image.jpg" %}" class="card-img-top" alt="Card Image"> {% endcomment %}
-                    
-                    <div class="card-body hover">                        
-                        <h5 class="card-title text-primary">Products</h5>
-                        <p class="card-text text-muted">Track all your procucts.</p>
+                        {% comment %} <img src="{% static "images/product_image.jpg" %}" class="card-img-top" alt="Card Image"> {% endcomment %}
+                        
+                        <div class="card-body hover">                        
+                            <h5 class="card-title text-primary">Products</h5>
+                            <p class="card-text text-muted">Track all your procucts.</p>
+                        </div>
                     </div>
-                </div>
-            </a>
-        </div>
-        <!-- Card 2 -->
-        <div class="col">
-            <a href="{% url "billing" %}" class="text-decoration-none">
-                <div class="card h-100 shadow-sm">
-                    {% comment %} <img src="{% static 'images/billing_image.jpg' %}" class="card-img-top" width="30%" height="20%" alt="Card Image"> {% endcomment %}
-                    <div class="card-body">
-                        <h5 class="card-title text-primary">Billing</h5>
-                        <p class="card-text text-muted">Billing page for sales billing entries.</p>
+                </a>
+            </div>
+            <!-- Card 2 -->
+            <div class="col">
+                <a href="{% url "billing" %}" class="text-decoration-none">
+                    <div class="card h-100 shadow-sm">
+                        {% comment %} <img src="{% static 'images/billing_image.jpg' %}" class="card-img-top" width="30%" height="20%" alt="Card Image"> {% endcomment %}
+                        <div class="card-body">
+                            <h5 class="card-title text-primary">Billing</h5>
+                            <p class="card-text text-muted">Billing page for sales billing entries.</p>
+                        </div>
                     </div>
-                </div>
-            </a>
-        </div>
-        <!-- Card 3 -->
-        <div class="col">
-            <a href="{% url "customers" %}" class="text-decoration-none">
-                <div class="card h-100 shadow-sm">
-                    <!-- <img src="https://via.placeholder.com/300x200" class="card-img-top" alt="Card Image"> -->
-                    <div class="card-body">
-                        <h5 class="card-title text-primary">Customers</h5>
-                        <p class="card-text text-muted">Track customers.</p>
+                </a>
+            </div>
+            <!-- Card 3 -->
+            <div class="col">
+                <a href="{% url "customers" %}" class="text-decoration-none">
+                    <div class="card h-100 shadow-sm">
+                        <!-- <img src="https://via.placeholder.com/300x200" class="card-img-top" alt="Card Image"> -->
+                        <div class="card-body">
+                            <h5 class="card-title text-primary">Customers</h5>
+                            <p class="card-text text-muted">Track customers.</p>
+                        </div>
                     </div>
-                </div>
-            </a>
-        </div>
-        <!-- Card 4 -->
-        <div class="col">
-            <a href="{% url "sales" %}" class="text-decoration-none">
-                <div class="card h-100 shadow-sm">
-                    <!-- <img src="https://via.placeholder.com/300x200" class="card-img-top" alt="Card Image"> -->
-                    <div class="card-body">
-                        <h5 class="card-title text-primary">Records</h5>
-                        <p class="card-text text-muted">Sales Records</p>
+                </a>
+            </div>
+            <!-- Card 4 -->
+            <div class="col">
+                <a href="{% url "sales" %}" class="text-decoration-none">
+                    <div class="card h-100 shadow-sm">
+                        <!-- <img src="https://via.placeholder.com/300x200" class="card-img-top" alt="Card Image"> -->
+                        <div class="card-body">
+                            <h5 class="card-title text-primary">Records</h5>
+                            <p class="card-text text-muted">Sales Records</p>
+                        </div>
                     </div>
-                </div>
-            </a>
+                </a>
+            </div>
         </div>
-    </div>
     </div>
 </div>
 
@@ -207,25 +207,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-<script>
-    let mybutton = document.getElementById("btn-back-to-top");
 
-    // When the user scrolls down 20px from the top of the document, show the button
-    window.onscroll = function () {
-    scrollFunction();
-    };
-
-    function scrollFunction() {
-    if (
-        document.body.scrollTop > 20 ||
-        document.documentElement.scrollTop > 20
-    ) {
-        mybutton.style.display = "block";
-    } else {
-        mybutton.style.display = "none";
-    }
-    }
-</script>
 <script>
 document.addEventListener("DOMContentLoaded", function () {
     // Convert Django lists into JavaScript arrays
@@ -266,17 +248,17 @@ document.addEventListener("DOMContentLoaded", function () {
                 x: {
                     title: { 
                         display: true,
-                        text: "Date",
-                        font: {size: 20, weight:"bold"},
-                        color: "red"
+                        text: "← Date →",
+                        font: {size: 20, weight:"bold",},
+                        color: "#cc1b5f"
                     }
                 },
                 y: {
                     title: { 
                         display: true,
-                        text: "Sales (৳)",
+                        text: "← Sales (৳) →",
                         font: {size: 20, weight:"bold"},
-                        color: "green"
+                        color: "#4287f5"
                     },
                     beginAtZero: true
                 }
@@ -313,17 +295,17 @@ document.addEventListener("DOMContentLoaded", function () {
                 x: {
                     title: { 
                         display: true,
-                        text: "Date",
-                        font: {size: 20, weight:"bold"},
-                        color: "red"
+                        text: "← Date →",
+                        font: {size: 20, weight:"bold",},
+                        color: "#cc1b5f"
                     }
                 },
                 y: {
                     title: { 
                         display: true,
-                        text: "Sales (৳)",
+                        text: "← Sales (৳) →",
                         font: {size: 20, weight:"bold"},
-                        color: "green"
+                        color: "#4287f5"
                     },
                     beginAtZero: true
                 }

@@ -8,6 +8,8 @@
     
     <!-- Bootstrap CSS -->
     <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+
     <style>
         /* Print Styles */
         body{
@@ -74,9 +76,10 @@
             }
 
             /* Hide the print button */
-            .print-btn, .back-btn{
+            .print-btn, .back-btn, .top-btn{
                 display: none !important;
             }
+
             .date-wise{
                 margin-bottom : 50vh;
             }
@@ -106,7 +109,7 @@
             <!-- Table -->
             <div class="table-responsive justify-content-center ">
                 <div class="title text-center">
-                    <p class="h4 fw-bold text-dark-emphasis">Short Summary</p>
+                    <p class="h4 fw-bold text-dark-emphasis">Sales Summary</p>
                 </div>
 
                 <table class="table table-bordered border-2  text-center align-middle table-striped">
@@ -286,11 +289,11 @@
     
     
     <div class="text-center position-fixed top-0 end-0 mt-4 me-2">
+        <br><br><br>
         <button class="btn btn-danger rounded-5 print-btn" onclick="window.print()">Print Report</button>
     </div>
-    <div class="text-center position-fixed top-0 start-0 mt-4 ms-2">
-        <button class="btn btn-dark rounded-5 back-btn" onclick="history.back()">Go Back</button>
-    </div>
+    {% include "back-btn.html" %}
+    {% include "top-btn.html" %}
     <!-- Bootstrap JS -->
     <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
 

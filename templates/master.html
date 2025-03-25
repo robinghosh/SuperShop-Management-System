@@ -23,10 +23,11 @@
   <body id="body">
     <!-- Navbar -->
     {% include "navbar.html" %}    
-    
+    {% include "top-btn.html" %}
     <!-- Main Content -->
     <main id="" class="container mt-4">{% block content %} {% endblock %}</main>
-
+    <br><br><br><br>
+    <!-- Footer -->
     {% include "footer.html" %}
     <!-- Bootstrap JS -->
     <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
