@@ -49,7 +49,7 @@
             <li class="nav-item m-1 me-0">
                 <form method="post" action="{% url 'logout' %}">
                   {% csrf_token %}
-                  <button type="submit" class="btn btn-danger btn-md rounded-3">Logout</button>
+                  <button type="submit" class="btn btn-danger btn-sm rounded-3" title="Logout"><span class="material-icons">logout</span></button>
                 </form>
             </li>              
             {% else %}

@@ -116,7 +116,7 @@ def sales_report(request):
            
             if filtered_records.exists():
                 aggregates = filtered_records.aggregate(
-                    total=Sum("netTotal"), 
+                    total=Sum("netTotal"),
                     vat=Sum("vatAmmount"), 
                     discount=Sum("discountAmmount")
                 ) # 
@@ -141,11 +141,12 @@ def sales_report(request):
                                 )
                         .order_by("sale_date__date"))
                 }
-                
+               
                 total_value = "{0:.2f}".format(aggregates["total"] or 0)
                 total_vat = "{0:.2f}".format(aggregates["vat"] or 0)
-                total_discount = "{0:.2f}".format(aggregates["discount"] or 0)
-
+                total_discount = "{0:.2f}".format(aggregates["discount"] or 0)                
+                total_customers = filtered_records.values("customer").distinct().count()
+                
                 for record in filtered_records:
                     for item in record.items.all():
                         product = product_wise_sales[item.productName]

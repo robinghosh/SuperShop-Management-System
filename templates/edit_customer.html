@@ -1,11 +1,11 @@
 {% extends "master.html" %}
 
-{% block title %}Customers - SSMS{% endblock %}
+{% block title %}Update Customers - Super Shop Management System{% endblock %}
 
 {% block content %}
 {% include "messages.html" %}
 <div class="container mt-4 p-4 bg-light shadow rounded">
-    <h2 class="text-center text-primary mb-2">Edit Customer Information of {{ customer.customerName }} - {{ customer.customerPhone }}</h2>
+    <h2 class="text-center text-primary mb-2">Edit Customer Information of <strong>"{{ customer.customerName }} - {{ customer.customerPhone }}"</strong></h2>
     <div class="mb-2 mt-5">
         <div class="d-flex justify-content-center">
             <form class="w-75" action="" method="post">
