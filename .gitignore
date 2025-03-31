@@ -24,6 +24,7 @@ staticfiles/
 desktop.ini
 #test files
 *.cmd
+init.bat
 # PDFs and generated files
 *.pdf
 

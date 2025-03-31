@@ -7,8 +7,8 @@
 {% block content %}
 {% include "messages.html" %}
 <div class="d-flex align-items-center justify-content-center flex-column mb-0">
-    <p class="fs-1 fw-semibold text-primary text-center">Super Shop Management System</p>
-    <p class="h2 text-dark-emphasis"><b>User :</b> @{{user.username}}<p>
+    <h1 class="fs-1 fw-bold text-primary text-center">Super Shop Management System</h1>
+    <p class="fs-3 text-dark-emphasis border border-secondary-subtle rounded-3 p-1">User :<b> @{{ user.username }}</b><p>
 </div>
 {% if user.is_superuser %}
     {% include "top-btn.html" %}

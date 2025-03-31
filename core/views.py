@@ -1,4 +1,3 @@
-import json
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.timezone import activate
@@ -20,6 +19,10 @@ from decimal import Decimal
 from io import BytesIO
 from barcode import Code39
 from barcode.writer import SVGWriter
+import qrcode
+import qrcode.image.svg
+import base64
+import json
 from collections import defaultdict
 import logging
 
@@ -157,10 +160,10 @@ def sales_report(request):
                                 product["prices"][item.price] = item.quantity
                     
                 sum_subtotal = sum(item["subtotal"] for item in product_wise_sales.values())
-                customer_report = filtered_records.values("customer").annotate(purchases=Count("customer"), purchase_value=Sum("netTotal")).order_by("-purchases")
-                total_customers = customer_report.count()
-                total_sales = filtered_records.count()
+                customer_report = filtered_records.values("customer","customer__membershipPlan").annotate(purchases=Count("customer"), purchase_value=Sum("netTotal")).order_by("-purchases")
                 
+                
+                total_sales = filtered_records.count()               
                 
             else:
                 msg_body = f"{start_date}" if not end_date else f"{start_date} to {end_date}"
@@ -198,6 +201,9 @@ def sales_report(request):
 def products(request):
     logged_in_user = request.user
     products = Inventory.objects.all().order_by("stock")
+    total_products = products.count()
+    #in_stock_products = 
+    #print(out_of_stock_products)
     empty_barcodes = Barcodes.objects.filter(is_assigned = False).first()
     paginator = Paginator(products, 10)
     # print(products.filter(productName="pran mama wafer biscuit".upper()))
@@ -209,14 +215,14 @@ def products(request):
             query_barcode = request.GET.get('query_barcode')
             if query_name:
                 query_name = query_name.strip()
-                products = Inventory.objects.filter(productName__icontains=query_name)
+                products = products.filter(productName__icontains=query_name)
                 paginator = Paginator(products, 10)
                 if products.exists():
                     messages.info(request, f"Found {products.count()} products by the keyword '{query_name}'")
                 else:
                     messages.warning(request, f"No products found by the keyword '{query_name}'")
             elif query_barcode:
-                products = Inventory.objects.filter(barcode=query_barcode)
+                products = products.filter(barcode=query_barcode)
                 paginator = Paginator(products, 10)
                 if products.exists():
                     product_names = ", ".join([product.productName for product in products])
@@ -224,7 +230,7 @@ def products(request):
                 else:
                     messages.info(request, f"No product found for Barcode: '{query_barcode}'")
             elif query_barcode and query_name:
-                products = Inventory.objects.filter(barcode=query_barcode)
+                products = products.filter(barcode=query_barcode)
                 paginator = Paginator(products, 10)
             else:
                 messages.error(request, f"Product Name or Barcode is empty!!")
@@ -280,6 +286,7 @@ def products(request):
     context = {
         'page_obj': page_obj,
         'empty_barcodes': empty_barcodes,
+        'total_products': total_products,
     }
     return render(request, "products.html", context)
 
@@ -514,10 +521,12 @@ def sales_record(request):
     else:
         sales_records = (SalesRecord.objects.prefetch_related("items").filter(user__id=logged_in_user.id).order_by("-sale_date"))
     
-   
-    paginator = Paginator(sales_records,10)
+    sort_by = request.GET.get("sort_by")
+    order = request.GET.get("order")   
+    
+    
 
-    sales_details_from_date = None
+    
     sales_count_from_date = None
     today = date.today()
    
@@ -531,17 +540,18 @@ def sales_record(request):
     
     todays_sales_count = sales_records.filter(sale_date__date=today).count()
 
-    filtered_records_by_date = None
-    filtered_records_for_customer = None
+  
     messages_storage = messages.get_messages(request)
     messages_storage.used = True  # Clear previous messages
 
-        # Query Parameters
+    # Query Parameters
+     
     query_date = request.GET.get("query_date")
     query_invoice = request.GET.get("query_invoice")
     query_customer_phone = request.GET.get("query_customer_phone")
 
     filtered_records = None  # Store the result of the selected search
+
     if query_customer_phone and query_date:
         filtered_records = sales_records.filter(customer__customerPhone=query_customer_phone, sale_date__date=query_date)
         sales_count_for_customer = filtered_records.count()
@@ -589,7 +599,14 @@ def sales_record(request):
         else:
             messages.error(request, f"No sales records exist for <b>{query_customer_phone}</b>.")
             filtered_records = None  # Reset to prevent display issues later
-    
+    if sort_by and order:
+        if sort_by in ['salesId', 'netTotal']:
+            if order not in ['asc', 'desc']:
+                return redirect("sales")
+            sort_order = f"-{sort_by}" if order == "asc" else sort_by
+            sales_records = sales_records.order_by(sort_order)
+        else:
+            return redirect("sales")
 
     
         
@@ -620,12 +637,125 @@ def sales_record(request):
 @login_required
 def customers(request):
     customer = Customer.objects.all().order_by("-total_purchase_value") # Get all records ordered by date (latest first)
+    total_customers = {        
+        "Regular": 0,
+        "Silver": 0,
+        "Gold": 0,
+        "Diamond": 0,
+        "Total": customer.count(),
+    }
+    for plan in ['R','S','G','D']:
+        customer_plan = customer.filter(membershipPlan=plan)
+        if plan == "R":
+            total_customers["Regular"] += customer_plan.count()
+        if plan == "S":
+            total_customers["Silver"] += customer_plan.count()
+        if plan == "G":
+            total_customers["Gold"] += customer_plan.count()
+        if plan == "D":
+            total_customers["Diamond"] += customer_plan.count()
+    form_type = request.GET.get('f')
+    sort_by = request.GET.get('sort_by')
+    order = request.GET.get('order')
+    if sort_by and order and not form_type:
+        if sort_by in ['purchase_count', 'total_purchase_value']:
+            if order not in ['asc', 'desc']:
+                return redirect('customers')                  
+            
+            sort_order = f"-{sort_by}" if order == "desc" else sort_by 
+            customer = customer.order_by(sort_order)
+        else:
+            return redirect("customers")
+    
+            
+    if form_type == "s":
+        query_customer_phone = request.GET.get('customer_phone')
+        if query_customer_phone:
+            customer = Customer.objects.filter(customerPhone=query_customer_phone)
+            if customer.exists():
+                messages.success(request, f"Customer with phone number: {query_customer_phone} found!")
+            else:
+                messages.error(request, f"No Customer Found With phone number:  {query_customer_phone}")
+                return redirect('customers')             
+        else:
+            messages.error(request, "Customer Phone is empty!!")
+    
     paginator = Paginator(customer, 10)  # Show 10 records per page
-
     page_number = request.GET.get('page')  # Get the current page number from query params
     page_obj = paginator.get_page(page_number)  # Get the specific page of records
-
-    return render(request, 'customers.html', {'page_obj': page_obj})
+    context = {
+        'page_obj': page_obj,
+        'total_customers': total_customers,
+    }
+    return render(request, 'customers.html', context)
+@login_required
+def edit_customer(request, customerPhone):
+    customer = None
+    try:
+        customer = Customer.objects.get(customerPhone=customerPhone)
+        
+    except Customer.DoesNotExist:
+        messages.error(request, f"Customer with phone:{customerPhone} does not exist!!")
+        return redirect('customers')
+    if request.method == "POST":
+        inp_customerName = request.POST.get("customerName")
+        inp_membershipPlan = request.POST.get("membershipPlan")
+        if inp_customerName == "":
+            messages.error(request, f"Fields can't be empty!!")
+            return redirect('customers') 
+        else:
+            updated = [False, False]
+            if inp_customerName != customer.customerName:
+                customer.customerName = inp_customerName
+                updated[0] = True
+            if inp_membershipPlan != customer.membershipPlan:
+                customer.membershipPlan = inp_membershipPlan
+                updated[1] = True
+            
+            if True in updated:
+                customer.save()
+                if updated[0] and updated[1]:
+                    messages.success(request, f"Customer(+880 {customerPhone}) Name({inp_customerName}) and Membership Plan({customer.get_membershipPlan_display()}) Updated Successfully!!")
+                elif updated[0] and not updated[1]:
+                    messages.success(request, f"Customer(+880 {customerPhone}) Name({inp_customerName}) Updated Successfully!!")
+                elif not updated[0] and updated[1]:
+                    messages.success(request, f"Customer(+880 {customerPhone}) Membership Plan({customer.get_membershipPlan_display()}) Updated Successfully!!")
+                return redirect('customers')                    
+    context = {
+        'customer': customer
+    }
+    return render(request, "edit_customer.html", context)
+@login_required
+def member_card(request, customerPhone):
+    customer = None
+    member_qr = ""
+    
+    try:
+        customer = Customer.objects.get(customerPhone=customerPhone)
+        
+        if customer:
+            if customer.membershipPlan == "R":
+                messages.error(request, f"Card is not applicable for Regular Members.<br>Customer: '{customer.customerName}(+880{customer.customerPhone})' is Regular Member!! ")
+                return redirect("customers")
+            else:
+                data = {
+                    'Name': customer.customerName,
+                    'Phone': customer.customerPhone,
+                    'Plan' : customer.membershipPlan
+                }
+                factory = qrcode.image.svg.SvgImage
+                qr = qrcode.make(data, image_factory=factory)
+                qr_svg_data = qr.to_string()
+                member_qr = base64.b64encode(qr_svg_data).decode('utf-8')
+    except Customer.DoesNotExist:
+        messages.error(request, f"Customer with phone:{customerPhone} does not exist!!")
+        return redirect('customers')
+                     
+    context = {
+        'customer': customer,
+        'member_qr': member_qr,
+    }
+    return render(request, "member_card.html", context)
 
 
 def faq(request):

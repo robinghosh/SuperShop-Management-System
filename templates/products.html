@@ -20,11 +20,14 @@
 {% block content %}
 <!--Error Messages-->
 {% include "messages.html" %}
+{% include "back-btn.html" %}
 <div class="container text-center">
   <div class="container mt-4 p-4 bg-body shadow-lg rounded">
-    <div class="d-flex justify-content-center p-3 mb-2">
-        <h1 class="text-primary text-center">Inventory</h1>     
-        {% include "back-btn.html" %}
+    <div class="d-flex justify-content-center flex-column p-3 mb-2">
+        <h1 class="text-primary text-center fw-bold">Inventory Products</h1>
+        <p class="fs-3 fw-semibold text-info-emphasis">Total : <b>{{ total_products }}</b> item(s).</p>
+        <p class
+        
     </div>
      
      
@@ -116,10 +119,10 @@
 
     <!--Table-->
     <div class="table overflow-x-auto">
-        <table class="table table-bordered table-responsive justify-content-center">
-            <thead class="table-success align-middle">
+        <table class="table table-bordered table-responsive justify-content-center table-striped">
+            <thead class="table-secondary align-middle">
                 <tr class="h5">
-                    <th>ID</th>
+                    <th >ID</th>
                     <th>Product Name</th>
                     <th>Barcode</th>
                     <th>Price (BDT)</th>
@@ -128,7 +131,7 @@
                     <th>Added</th>
                     <th>Updated</th>
                     {% endif %}
-                    <th class="position-sticky end-0 table-info"><span class="material-icons">build</span></th>
+                    <th class="position-sticky end-0 table-"><span class="material-icons">build</span></th>
                 </tr>
             </thead>
             <tbody class="align-middle fw-bold">

@@ -1,16 +1,65 @@
 {% extends "master.html" %}
 
 {% block title %}Sales Records{% endblock %}
+
+{% block style %}
+
+  
+{% endblock style %}
+
 {% block script %}
 <script>
-</script>       
+    function printRecord() {
+        let data = document.getElementById("sales-record-section").innerHTML;
+       
+        let printWindow = window.open('', '', 'height=1000, width=1000');
+        
+        printWindow.document.open();
+        printWindow.document.write(`
+            <html>
+            <head>
+                <title>Records-{{ date_today }}</title>
+                <style>
+                    table { width: 100%; border-collapse: collapse; }
+                    th{ background-color: gainsboro; color: black;}
+                    td, th { border: 1px solid black; padding: 10px; text-align: center; }
+                    h1, h3, h6 { margin: 10px 0; }
+                    #setting-th, #setting-td, .sort-arrow {
+                            display: none;
+                        }  
+                    @media print {
+                        #setting-th, #setting-td {
+                            display: none;
+                        }  
+                    }
+                </style>
+            </head>
+            <body>
+                <h1>Super Shop Management System</h1>
+                <h3>Sales Records | Printed On: {{ date_today }}</h3>                
+                ${data}
+            </body>
+            </html>
+        `);
+        printWindow.document.close();
+
+        // Wait for content to load before printing
+        printWindow.onload = function () {
+            printWindow.print();
+            printWindow.onafterprint = function () {
+                printWindow.close();
+            };
+        };
+    }
+</script>     
 {% endblock script %}
+
 
 {% block content %}
 {% include "messages.html" %}
 {% include "invoice_modal.html" %}
 <div class="container mt-4 p-4 bg-light shadow rounded">
-    <h1 class="text-center text-primary">Sales Records</h1>
+    <h1 class="text-center text-primary fw-bold">Sales Records</h1>
     <div class="container my-3">
         <div class="row justify-content-center text-center">
             <!-- Total Sales -->
@@ -40,59 +89,102 @@
  
     
     <!-- Search Section -->
-    <div class="d-flex flex-column  justify-content-center mt-4">
-        <button class="btn btn-primary d-flex d-flex align-items-center align-self-end h-50 mb-2" type="button" data-bs-toggle="collapse" data-bs-target="#searchSection" aria-expanded="false" aria-controls="searchSection">
-            Search Records
-            <span class="material-symbols-outlined">search</span>
-        </button>
+    <div class="d-flex flex-column justify-content-center mt-4">
         
+        <div class="text-start">
+            <div class="btn-group gap-2">
+                <button class="btn btn-primary mb-2 d-flex align-items-center gap-1 px-3" 
+                        type="button" data-bs-toggle="collapse" 
+                        data-bs-target="#searchSection" 
+                        aria-expanded="false" aria-controls="searchSection">
+                    Search Records
+                    <span class="material-symbols-outlined">search</span>
+                </button>
+                <button class="printRecordBtn btn btn-primary mb-2 px-3" onclick=printRecord() >Print Page Records</button>
+            </div>
+        </div>
+    
         <div class="collapse mb-5" id="searchSection">
             <div class="card card-body col-sm-6 mx-auto w-100">
-                <div class="container-fluid w-50 align-center justify-content-center">
-                    <p class="h4 text-primary text-center ">Search Records By:</p>
-                    <p class="h6 text-primary text-center ">(Only one option can be chosen)</p>
-                    <form method="GET" class="text-primary align-center ">
-                        {% comment %} <input type="hidden" name="form_type" value="query_by_sales_date_form"> {% endcomment %}
-                        <label for="query_date"> Sales Date </label>                     
-                        <input class="form-control rounded-3 mb-2 search-input" type="date" name="query_date" id="query_date">
+                <div class="d-flex flex-column justify-content-center">
+                    <p class="h4 text-primary text-center">Search Records By:</p>
+                       
+                    <form method="GET" class="text-primary">
+                        <div class="mb-2">
+                            <label for="query_invoice">Invoice #</label>
+                            <input class="form-control search-input w-100" type="number" min="1" name="query_invoice" id="query_invoice" placeholder="Invoice #" title="Invoice No.">
+                        </div>
 
-                        <p class="text-center mb-1">OR</p>
-
-                        <label for="invoice"> Invoice No. </label>
-                        <input class="form-control rounded-3 mb-2 search-input" type="number" min="1" name="query_invoice" id="query_invoice" placeholder="Invoice #">
-
-                        <p class="text-center mb-1">OR</p>
-
-                        <label for="query_customer_phone"> Customer Phone No. </label>
-                        <div class="w-100 mb-2">
-                            <div class="form-control rounded-3 d-flex align-items-center">
-                                <span class="me-2">+880</span>
-                                <input type="tel" class="border-0 flex-grow-1 search-input" maxlength="11" minlength="10" id="query_customer_phone" name="query_customer_phone" placeholder="Customer Phone (e.g. 017xxxxxxxx)">
+                        <div class="mb-2">
+                            <label for="query_date">Sales Date</label>
+                            <input class="form-control search-input w-100" type="date" name="query_date" id="query_date" title="Sales Date">
+                        </div>   
+                            
+                        <div class="mb-2">
+                            <label for="query_customer_phone">Customer Phone No.</label>
+                            <div class="input-group">
+                                <span class="input-group-text">+880</span>
+                                <input type="tel" class="form-control search-input" maxlength="11" minlength="10" id="query_customer_phone" name="query_customer_phone" placeholder="Customer Phone (e.g. 017xxxxxxxx)" title="Customer Phone (e.g. 017xxxxxxxx)">
                             </div>
                         </div>
+    
                         <button type="submit" class="btn btn-primary w-100 rounded-3">Search</button>
                     </form>
                 </div>
             </div>
-        </div>          
+        </div>
     </div>
-
-    <div class="table overflow-x-auto">
-        <table class="table table-light table-group-divider table-bordered table-hover ">
-            <thead>            
-                <tr class="text-center table-success justify-content-between align-middle h5">
-                    <th>Invoice</th>
+    
+    
+    <div class="overflow-x-auto" id="customer-section">
+        <table class="table table-light table-group-divider table-bordered table-hover table-responsive text-center">
+            <thead class="table-secondary h5">            
+                <tr class="align-middle">
+                    <th>
+                        <div class="d-flex justify-content-center align-items-center gap-1">
+                            <span>Invoice</span>
+                            
+                            <div class="sort-arrow" title="Sort">
+                                <a href="?sort_by=salesId&order=asc" class="btn btn-sm p-0 m-0 {% if request.GET.sort_by == 'salesId' and  request.GET.order == 'asc' %} btn-danger {% else %}btn-outline-danger{% endif %}">
+                                    <span class="material-symbols-outlined">
+                                        keyboard_arrow_up
+                                    </span>
+                                </a>
+                                <a href="?sort_by=salesId&order=desc" class="btn btn-sm p-0 m-0 {% if request.GET.sort_by == 'salesId' and request.GET.order == 'desc' %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                                    <span class="material-symbols-outlined">
+                                        keyboard_arrow_down
+                                    </span>
+                                </a>
+                            </div>
+                        </div>
+                    </th>
                     <th>Customer Phone</th>
                     <th>Products</th>
                     <th>VAT(%)</th>
-                    <th>Discount(%)</th>
-                    <th>Net Total</th>
+                    <th>Discount(%) </th>
+                    <th>
+                        <div class="d-flex justify-content-center align-items-center gap-1">
+                            <span>Net Total</span>
+                            <div class="sort-arrow" title="Sort">
+                                <a href="?sort_by=netTotal&order=asc" class="btn btn-sm p-0 m-0 {% if request.GET.sort_by == 'netTotal' and request.GET.order == 'asc' %}btn-danger{% else %}btn-outline-danger{% endif %}">
+                                    <span class="material-symbols-outlined">
+                                        keyboard_arrow_up
+                                    </span>
+                                </a>
+                                <a href="?sort_by=netTotal&order=desc" class="btn btn-sm p-0 m-0 {% if request.GET.sort_by == 'netTotal' and request.GET.order == 'desc' %}btn-danger{% else %}btn-outline-primary{% endif %}">
+                                    <span class="material-symbols-outlined">
+                                        keyboard_arrow_down
+                                    </span>
+                                </a>
+                            </div>
+                        </div>
+                    </th>
                     <th>Payment Method</th>
                     {% if user.is_superuser %}
                     <th>Counter</th>
                     {% endif %}                    
                     <th>Date & Time</th>
-                    <th class="table-info position-sticky end-0 me-0"><span class="material-icons">build</span></th>
+                    <th class="table-info position-sticky end-0 me-0" id="setting-th"><span class="material-icons">build</span></th>
                 </tr>
             </thead>
             <tbody>
@@ -121,7 +213,7 @@
                         <td class="text-center">{{ record.user.username }}</td>
                         {% endif %}
                         <td class="text-center">{{ record.sale_date|date:" j F, Y g:i A" }}</td>
-                        <td class="text-center position-sticky end-0">
+                        <td class="text-center position-sticky end-0" id="setting-td">
                             {% comment %} <a class="link-style-none link-success" href="{% url 'invoice' record.salesId%}" target="_blank" rel="noopener noreferrer" alt="Invoice" title="Invoice"><span class="material-icons">receipt</span></a> {% endcomment %}
                             <button type="button" class="btn link-success  btn-sm invoice-btn" id="invoiceBtn" data-bs-toggle="modal" data-bs-target="#invoiceModal" data-url="{% url "invoice" record.salesId %}" title="Invoice"><span class="material-icons">receipt</span></button>
                                                         

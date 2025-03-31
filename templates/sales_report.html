@@ -160,7 +160,7 @@
                     <thead class="table-primary ">                        
                         <th>Date</th> 
                         <th>Sales</th>
-                        <th>Custmers</th>        
+                        <th>Customers</th>        
                         <th>Total Value</th>            
                         <th>VAT</th>
                         <th>Discount</th>
@@ -256,7 +256,8 @@
                     <thead class="table-primary">
                         <tr class="fs-6">
                             <th>SL.</th>
-                            <th>Customer Phone</th>    
+                            <th>Customer Phone</th>
+                            <th>Membership Plan</th> 
                             <th>Total Purchased</th>
                             <th>Total Purchases Value</th>
                             
@@ -266,7 +267,18 @@
                         {% for customer in customer_report %}
                         <tr class="fs-6">
                             <td class="fw-bold">{{forloop.counter}}.</td>
-                            <td>+880 {{ customer.customer }}</td>
+                            <td>+880{{ customer.customer }}</td>
+                            {% if customer.customer__membershipPlan == "R" %}
+                            <td class="fs-6 text-success">Regular</td>
+                            {% elif customer.customer__membershipPlan == "S" %}
+                            <td class="fs-6 text-secondary">Silver</td>
+                            {% elif customer.customer__membershipPlan == "G" %}
+                            <td class="fs-6 text-warning">Gold</td>
+                            {% elif customer.customer__membershipPlan == "D" %}
+                            <td class="fs-6 text-primary">Diamond</td>
+                            {% else %}
+                            <td class="fs-6 text-danger">Unknown</td>
+                            {% endif %} 
                             <td>{{ customer.purchases }}</td>                            
                             <td>{{ customer.purchase_value|floatformat:2 }} TK</td>
                             

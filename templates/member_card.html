@@ -1,0 +1,86 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Membership Card</title>
+    <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+    <style>
+        @media print {
+            body {
+                visibility: hidden;
+            }
+            .print-container {
+                visibility: visible;
+                width: 5inch;
+                height: 3inch;
+            }
+        }
+        .print-container {
+            margin: 0;
+            padding: 20px;
+            width: 100%;
+        }
+        .text-primary {
+            color: #000;
+            font-weight: bold;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #f8f9fa;
+        }
+        img {
+            display: block;
+            margin: auto;
+        }
+        hr {
+            border: 2px solid #000;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid print-container">
+        <!-- Header Section -->
+        <div class="text-center mb-2">
+            <h1 class="h3 text-primary-emphasis">Super Shop Management System</h1>  
+            <h2 class="h5 text-emphasis">Membership Card</h2>
+            <hr>
+        </div>
+
+        <!-- Content Section -->
+        <div class="d-flex justify-content-between align-items-start w-100 align-items-center">
+            <!-- Table Section -->
+            <table class="table table-borderless w-50">
+                <tbody>
+                    <tr>
+                        <th class="text-center" style="width: 50%;">Name :</th>
+                        <td class="text-start">{{ customer.customerName }}</td>
+                    </tr>
+                    <tr>
+                        <th class="text-center">Phone :</th>
+                        <td class="text-start">+880{{ customer.customerPhone }}</td>
+                    </tr>
+                    <tr>
+                        <th class="text-center">Plan :</th>
+                        <td class="text-start">{{ customer.get_membershipPlan_display }}</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- QR Code Section -->
+            <div class="text-center">
+                <img src="data:image/svg+xml;base64,{{ member_qr }}" alt="QR Code" class="img-fluid" style="width: 200px; height: 200px; ">
+            </div>
+        </div>
+    </div>
+    <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+</body>
+</html>

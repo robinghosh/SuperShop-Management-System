@@ -1,33 +1,149 @@
 {% extends "master.html" %}
 
-{% block title %}Sales Records - SSMS{% endblock %}
+{% block title %}Customers - SSMS{% endblock %}
+
+{% block script %}
+
+{% endblock script %}
 
 {% block content %}
+{% include "messages.html" %}
 <div class="container mt-4 p-4 bg-light shadow rounded">
-    <h2 class="text-center text-primary mb-2">Customer List</h2>
-    <table class="table table-bordered table-responsive-md text-center">
-        <thead class="table-primary">
-            <tr class="fw-b table-success h5">
-                <th>Customer Phone</th>
-                <th>Total Purchases</th>
-                <th>Total Value(TK)</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for record in page_obj.object_list %}
-                <tr>
-                    <td>{{ record.customerPhone }}</td>
-                    <td>{{ record.purchase_count }}</td>
-                    <td class="fw-bold">TK {{ record.total_purchase_value }}/-</td>
-                </tr>
-            {% empty %}
-                <tr>
-                    <td colspan="9" class="text-center">No records found</td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <div claas="d-flex flex-column justify-content-center">
+        <h1 class="text-center text-primary mb-2 fw-bold">Customer List</h1>
+        <div class="text-center justify-content-center">
+            <table class="table table-light table-bordered table-responsive">
 
+                <tbody>
+                    <tr>
+                        <th>Plans</th>
+                        {% for key in total_customers %}
+                            <td>{{ key }}</td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <th>Customers</th>
+                        {% for value in total_customers.values %}
+                        <td>{{ value }}</td>
+                        {% endfor %}
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <div class=" mb-2 w-100">
+        <form class="" method="GET">
+            <label class="text-primary h5" for="search">Search Customer by Phone:</label>
+            <input type="hidden" name="f" value="s">
+            <div class="d-flex gap-1">
+                <div class="input-group">                
+                    <span class="input-group-text">+880</span>
+                    <input class="form-control" type="tel" name="customer_phone" pattern="\d{10,11}" minlength="10" maxlength="11" placeholder="Customer's Phone (e.g. 01xxxxxxxx)" id="search" aria-label="Search" title="10-11 Digit (e.g. 01XXXXXXXXX)" required>
+                </div>
+                <button class="btn btn-outline-primary" type="submit"><span class="material-symbols-outlined">search</span></button>
+                <a href="{% url 'customers' %}" class="btn btn-outline-primary"><span class="material-symbols-outlined">replay</span></a>
+                
+            </div>
+            
+            
+        </form>
+        
+    </div>
+    <div class="overflow-x-auto">
+        <table class="table table-light table-group-divider table-bordered table-hover table-responsive text-center">
+            <thead class="table-secondary h5">
+                <tr class="align-middle">
+                    <th>SL</th>
+                    <th>Customer Phone</th>
+                    <th>Customer Name</th>
+                    <th>Membership Plan</th>
+                    <th>
+                        <div class="d-flex justify-content-center align-items-center gap-1">
+                            <span>No. Of Purchases</span>                        
+                            <div class="sort-arrow d-flex justify-content-center flex-column" title="Sort">
+                                <a href="?sort_by=purchase_count&order=asc" class="btn btn-sm p-0 m-0 {% if request.GET.sort_by == 'purchase_count' and  request.GET.order == 'asc' %} btn-danger {% else %}btn-outline-danger{% endif %}">
+                                    <span class="material-symbols-outlined">
+                                        keyboard_arrow_up
+                                    </span>
+                                </a>
+                                <a href="?sort_by=purchase_count&order=desc" class="btn btn-sm p-0 m-0 {% if request.GET.sort_by == 'purchase_count' and request.GET.order == 'desc' %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                                    <span class="material-symbols-outlined">
+                                        keyboard_arrow_down
+                                    </span>
+                                </a>
+                            </div>
+                        </div>
+                    </th>
+                    
+                    <th>
+                        <div class="d-flex justify-content-center align-items-center gap-1">
+                            <span>Total Purchase Value (TK)</span>
+                            <div class="sort-arrow d-flex justify-content-center flex-column" title="Sort">
+                                <a href="?sort_by=total_purchase_value&order=asc" class="btn btn-sm p-0 m-0 {% if request.GET.sort_by == 'total_purchase_value' and  request.GET.order == 'asc' %} btn-danger {% else %}btn-outline-danger{% endif %}">
+                                    <span class="material-symbols-outlined">
+                                        keyboard_arrow_up
+                                    </span>
+                                </a>
+                                <a href="?sort_by=total_purchase_value&order=desc" class="btn btn-sm p-0 m-0 {% if request.GET.sort_by == 'total_purchase_value' and request.GET.order == 'desc' %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                                    <span class="material-symbols-outlined">
+                                        keyboard_arrow_down
+                                    </span>
+                                </a>
+                            </div>
+                        </div>
+                    </th>
+                        
+                    <th class="position-sticky end-0 table-"><span class="material-icons">build</span></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for record in page_obj.object_list %}
+                    <tr>
+                        <td class="fw-medium">{{ forloop.counter }}</td>
+                        <td>+880 {{ record.customerPhone }}</td>
+                        <td>{{ record.customerName }}</td>
+                        <td class="position-relative">
+                            <!-- Membership Plan Text -->
+                            <div>
+                                {{ record.get_membershipPlan_display }}
+                            </div>
+
+                            <!-- Badge Icon in Top-Right Corner -->
+                            {% if record.membershipPlan != "R" %}
+                            <a class="btn btn-sm btn-link member-card position-absolute top-0 end-0 me-1 mt-1" href="{% url "member_card" record.customerPhone %}" style="padding: 0;">
+                                <span class="material-symbols-outlined" style="font-size: 25px;">
+                                    badge
+                                </span>
+                            </a>
+                            {% endif %}
+                        </td>
+                        <td>{{ record.purchase_count }}</td>
+                        <td class="fw-bold">TK {{ record.total_purchase_value }}/-</td>
+                        <td class="position-sticky end-0 table-">
+                            <a href="{% url "sales" %}?query_customer_phone={{ record.customerPhone }}" target="_blank" class="btn btn-outline-primary btn-sm">
+                                <span class="material-symbols-outlined">
+                                    quick_reference_all
+                                </span>
+                            </a>
+                            <a class="btn btn-sm btn-outline-primary" href="{% url "edit_customer" record.customerPhone %}">
+                                <span class="material-symbols-outlined">
+                                    edit
+                                </span>
+                            </a>
+                            
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center">No records found</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    
+    </div>
+    
     <!-- Pagination Navigation -->
     <nav aria-label="Page navigation example">
         <ul class="pagination justify-content-center">

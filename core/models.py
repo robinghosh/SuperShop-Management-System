@@ -39,14 +39,26 @@ class Barcodes(models.Model):
     barcode_svg = models.TextField(max_length=1000, null=True, blank=True)
     def __str__(self):
         return f"{self.barcodes} - {self.product} - {self.is_assigned}"
-    
+
 class Customer(models.Model):
-    customerPhone = models.BigIntegerField(primary_key=True)  # Unique customer identifier
+    PLAN_CHOICES = (
+        ('R', 'Regular'),
+        ('S', 'Silver'),
+        ('G', 'Gold'),
+        ('D', 'Diamond')        
+    )    
+    customerPhone = models.BigIntegerField(primary_key=True)  
+    customerName = models.CharField(max_length=100, default="N/A")     
+    membershipPlan = models.CharField( 
+        max_length = 20, 
+        choices = PLAN_CHOICES, 
+        default = 'R'
+        )
     purchase_count = models.IntegerField(default=0)
     total_purchase_value = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
 
     def __str__(self):
-        return f"Customer: {self.customerPhone} | Purchases: {self.purchase_count} | Total Value: {self.total_purchase_value}"
+        return f"Customer: {self.customerName} | Phone: {self.customerPhone} | Membership: {self.membershipPlan} | Purchases: {self.purchase_count} | Total Value: {self.total_purchase_value}"
 
     @staticmethod
     def update_customer_data(customer_phone, purchase_value):
