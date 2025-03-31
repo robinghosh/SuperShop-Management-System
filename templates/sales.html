@@ -92,15 +92,20 @@
     <div class="d-flex flex-column justify-content-center mt-4">
         
         <div class="text-start">
-            <div class="btn-group gap-2">
-                <button class="btn btn-primary mb-2 d-flex align-items-center gap-1 px-3" 
+            <div class="btn-group gap-2 mb-2">
+                <button class="btn btn-primary d-flex align-items-center  px-3" 
                         type="button" data-bs-toggle="collapse" 
                         data-bs-target="#searchSection" 
                         aria-expanded="false" aria-controls="searchSection">
-                    Search Records
                     <span class="material-symbols-outlined">search</span>
                 </button>
-                <button class="printRecordBtn btn btn-primary mb-2 px-3" onclick=printRecord() >Print Page Records</button>
+                <button class="printRecordBtn btn btn-primary px-3" onclick=printRecord() title="Print Page Record">
+                    <span class="material-symbols-outlined">print</span>
+                </button>
+
+                <a href="{% url 'sales' %}" id="reset_query_link" class="btn btn-primary px-3" style="display: none;" title="undo">
+                    <span class="material-symbols-outlined">undo</span>
+                </a> 
             </div>
         </div>
     
@@ -171,7 +176,7 @@
                                         keyboard_arrow_up
                                     </span>
                                 </a>
-                                <a href="?sort_by=netTotal&order=desc" class="btn btn-sm p-0 m-0 {% if request.GET.sort_by == 'netTotal' and request.GET.order == 'desc' %}btn-danger{% else %}btn-outline-primary{% endif %}">
+                                <a href="?sort_by=netTotal&order=desc" class="btn btn-sm p-0 m-0 {% if request.GET.sort_by == 'netTotal' and request.GET.order == 'desc' %}btn-primary{% else %}btn-outline-primary{% endif %}">
                                     <span class="material-symbols-outlined">
                                         keyboard_arrow_down
                                     </span>
@@ -275,6 +280,9 @@
 </div>
 {% include "back-btn.html" %}
 <script>
+    if (window.location.search){
+        document.getElementById("reset_query_link").style.display = "flex";
+    }
     {% comment %} const dateInput = document.getElementById("query_date");
     dateInput.valueAsDate = "2025-02-22"; {% endcomment %}
     {% comment %} document.getElementById("query_date").value = "{{ today|date:"Y-m-d" }}"; {% endcomment %}

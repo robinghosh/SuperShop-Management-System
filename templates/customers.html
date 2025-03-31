@@ -32,24 +32,56 @@
         </div>
     </div>
     
-    <div class=" mb-2 w-100">
-        <form class="" method="GET">
-            <label class="text-primary h5" for="search">Search Customer by Phone:</label>
-            <input type="hidden" name="f" value="s">
-            <div class="d-flex gap-1">
-                <div class="input-group">                
-                    <span class="input-group-text">+880</span>
-                    <input class="form-control" type="tel" name="customer_phone" pattern="\d{10,11}" minlength="10" maxlength="11" placeholder="Customer's Phone (e.g. 01xxxxxxxx)" id="search" aria-label="Search" title="10-11 Digit (e.g. 01XXXXXXXXX)" required>
-                </div>
-                <button class="btn btn-outline-primary" type="submit"><span class="material-symbols-outlined">search</span></button>
-                <a href="{% url 'customers' %}" class="btn btn-outline-primary"><span class="material-symbols-outlined">replay</span></a>
-                
-            </div>
-            
-            
-        </form>
-        
+
+    <div class=" mb-2 mt-5 w-100 d-flex gap-1">
+        <button class="btn btn-primary d-flex align-items-center" type="button" data-bs-toggle="collapse" data-bs-target="#searchCustomer" aria-expanded="false" aria-controls="searchCustomer" title="Search Customer(s)"> 
+            <span class="material-symbols-outlined">search</span>
+        </button>
+        <button class="btn btn-primary d-flex align-items-center" type="button" data-bs-toggle="collapse" data-bs-target="#memberCard" aria-expanded="false" aria-controls="memberCard" title="Generate Membership Card"> 
+            <span class="material-symbols-outlined">badge</span>
+        </button>
+        <a href="{% url 'customers' %}" id="reset_query_link" class="btn btn-primary" style="display: none;" title="Reset Queries">
+            <span class="material-symbols-outlined">undo</span>
+        </a> 
     </div>
+
+    <div class="collapse mb-4 mt-2" id="searchCustomer">
+        <div class="card card-body col-sm-6 mx-auto w-100">
+            <div class="container-fluid w-100 align-center justify-content-center">
+                <form class="" method="GET">
+                    <label class="text-primary h5" for="searchByPhone">Search Customer by Phone:</label>
+                    <input type="hidden" name="f" value="s">
+                    <div class="d-flex gap-1">
+                        <div class="input-group">                
+                            <span class="input-group-text">+880</span>
+                            <input class="form-control" type="tel" name="customer_phone" pattern="\d{10,11}" minlength="10" maxlength="11" placeholder="Customer's Phone (e.g. 01xxxxxxxx)" id="searchByPhone" aria-label="Search" title="10-11 Digit (e.g. 01XXXXXXXXX)" required>
+                        </div>
+                        <button class="btn btn-outline-primary" type="submit"><span class="material-symbols-outlined">search</span></button>
+                        <button class="btn btn-outline-primary" type="reset"><span class="material-symbols-outlined">cancel</span></button>                       
+                    </div>                  
+                </form>                 
+            </div>
+        </div>
+    </div>
+
+    <div class="collapse mb-4 mt-2" id="memberCard">
+        <div class="card card-body col-sm-6 mx-auto w-100">
+            <div class="container-fluid w-100 align-center justify-content-center">
+                <label class="text-primary h5" for="memberCardPhone">Customer Phone for Memebership Card:</label>     
+                <form id="member_card_form">
+                    <div class="d-flex gap-1">
+                        <div class="input-group">                
+                            <span class="input-group-text">+880</span>
+                            <input class="form-control" type="tel" pattern="\d{10,11}" minlength="10" maxlength="11" placeholder="Customer's Phone (e.g. 01xxxxxxxx)" id="member_card_phone" aria-label="Search" title="10-11 Digit (e.g. 01XXXXXXXXX)" required>
+                        </div>
+                            <button type="submit" class="btn btn-outline-primary"><span class="material-symbols-outlined">search</span></button>
+                            <button class="btn btn-outline-primary" type="reset"><span class="material-symbols-outlined">cancel</span></button> 
+                    </div> 
+                </form>                     
+            </div>
+        </div>
+    </div>
+    
     <div class="overflow-x-auto">
         <table class="table table-light table-group-divider table-bordered table-hover table-responsive text-center">
             <thead class="table-secondary h5">
@@ -62,12 +94,12 @@
                         <div class="d-flex justify-content-center align-items-center gap-1">
                             <span>No. Of Purchases</span>                        
                             <div class="sort-arrow d-flex justify-content-center flex-column" title="Sort">
-                                <a href="?sort_by=purchase_count&order=asc" class="btn btn-sm p-0 m-0 {% if request.GET.sort_by == 'purchase_count' and  request.GET.order == 'asc' %} btn-danger {% else %}btn-outline-danger{% endif %}">
+                                <a href="?sort_by=purchase_count&order=asc" class="btn btn-sm p-0 m-0 {% if request.GET.sort_by == 'purchase_count' and  request.GET.order == 'asc' %} btn-danger {% else %}btn-outline-danger{% endif %}" title="Ascending">
                                     <span class="material-symbols-outlined">
                                         keyboard_arrow_up
                                     </span>
                                 </a>
-                                <a href="?sort_by=purchase_count&order=desc" class="btn btn-sm p-0 m-0 {% if request.GET.sort_by == 'purchase_count' and request.GET.order == 'desc' %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                                <a href="?sort_by=purchase_count&order=desc" class="btn btn-sm p-0 m-0 {% if request.GET.sort_by == 'purchase_count' and request.GET.order == 'desc' %}btn-primary{% else %}btn-outline-primary{% endif %}" title="Descending">
                                     <span class="material-symbols-outlined">
                                         keyboard_arrow_down
                                     </span>
@@ -80,12 +112,12 @@
                         <div class="d-flex justify-content-center align-items-center gap-1">
                             <span>Total Purchase Value (TK)</span>
                             <div class="sort-arrow d-flex justify-content-center flex-column" title="Sort">
-                                <a href="?sort_by=total_purchase_value&order=asc" class="btn btn-sm p-0 m-0 {% if request.GET.sort_by == 'total_purchase_value' and  request.GET.order == 'asc' %} btn-danger {% else %}btn-outline-danger{% endif %}">
+                                <a href="?sort_by=total_purchase_value&order=asc" class="btn btn-sm p-0 m-0 {% if request.GET.sort_by == 'total_purchase_value' and  request.GET.order == 'asc' %} btn-danger {% else %}btn-outline-danger{% endif %}" title="Descending">
                                     <span class="material-symbols-outlined">
                                         keyboard_arrow_up
                                     </span>
                                 </a>
-                                <a href="?sort_by=total_purchase_value&order=desc" class="btn btn-sm p-0 m-0 {% if request.GET.sort_by == 'total_purchase_value' and request.GET.order == 'desc' %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                                <a href="?sort_by=total_purchase_value&order=desc" class="btn btn-sm p-0 m-0 {% if request.GET.sort_by == 'total_purchase_value' and request.GET.order == 'desc' %}btn-primary{% else %}btn-outline-primary{% endif %}" title="Ascending">
                                     <span class="material-symbols-outlined">
                                         keyboard_arrow_down
                                     </span>
@@ -111,8 +143,14 @@
 
                             <!-- Badge Icon in Top-Right Corner -->
                             {% if record.membershipPlan != "R" %}
-                            <a class="btn btn-sm btn-link member-card position-absolute top-0 end-0 me-1 mt-1" href="{% url "member_card" record.customerPhone %}" style="padding: 0;">
+                            <a class="btn btn-sm btn-link member-card position-absolute top-0 end-0 me-1 mt-1" href="{% url "member_card" record.customerPhone %}" style="padding: 0;" title="Membership Card">
                                 <span class="material-symbols-outlined" style="font-size: 25px;">
+                                    badge
+                                </span>
+                            </a>
+                            {% else %}
+                            <a class="btn btn-sm member-card position-absolute top-0 end-0 me-1 mt-1" style="padding: 0;" title="Card Not Available For Regular Member" disabled>
+                                <span class="material-symbols-outlined text-secondary" style="font-size: 25px;">
                                     badge
                                 </span>
                             </a>
@@ -121,12 +159,12 @@
                         <td>{{ record.purchase_count }}</td>
                         <td class="fw-bold">TK {{ record.total_purchase_value }}/-</td>
                         <td class="position-sticky end-0 table-">
-                            <a href="{% url "sales" %}?query_customer_phone={{ record.customerPhone }}" target="_blank" class="btn btn-outline-primary btn-sm">
+                            <a href="{% url "sales" %}?query_customer_phone={{ record.customerPhone }}" target="_blank" class="btn btn-outline-primary btn-sm" title="Sales Records">
                                 <span class="material-symbols-outlined">
                                     quick_reference_all
                                 </span>
                             </a>
-                            <a class="btn btn-sm btn-outline-primary" href="{% url "edit_customer" record.customerPhone %}">
+                            <a class="btn btn-sm btn-outline-primary" href="{% url "edit_customer" record.customerPhone %}" title="Update Customer">
                                 <span class="material-symbols-outlined">
                                     edit
                                 </span>
@@ -175,5 +213,42 @@
         </ul>
     </nav>
 </div>
+
 {% include "back-btn.html" %}
+<script>
+    const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+    const queries = [...urlParams.keys()];
+    const reset_query_link = document.getElementById("reset_query_link")
+    let searchPhoneInp = document.getElementById("searchByPhone");
+    if (queries[0]==='f' && queries[1] ==="customer_phone"){
+        const customer_phone = urlParams.get('customer_phone');
+        if (queries[1]){
+            console.log(customer_phone);
+            searchPhoneInp.value = customer_phone;
+        }           
+    }else{
+        console.log(queryString);
+    }
+    if (queryString){
+        reset_query_link.style.display =  "flex";
+    }
+</script>
+<script>
+    let member_card_phone_Inp = document.getElementById("member_card_phone");
+    let member_card_form = document.getElementById("member_card_form");
+    member_card_phone_Inp.addEventListener("input", function() {
+        let phone = member_card_phone_Inp.value;
+        if (phone && !isNaN(phone) && Number.isInteger(Number(phone)) && phone.length >= 10)  {
+            member_card_form.action = `/customers/card/${phone}/`;
+            member_card_form.target = "_self";
+            console.log("Valid Phone:", phone);
+        } else {
+            member_card_form.action = "/customers/";
+            console.log("Invalid Phone or Not a Number");
+        }
+    });
+    
+    
+</script>
 {% endblock %}

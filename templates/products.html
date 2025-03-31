@@ -30,14 +30,23 @@
         
     </div>
      
-     
+    <div class="d-md-flex justify-content-center gap-2 mb-0 border border-1 mx-auto p-2">
+        <div class="p-1 text-center fw-bold">Color Note: </div>
+        <div class="border border-2 p-1 bg-light-subtle text-center rounded-4">Available</div>
+        <div class="border border-2 p-1 bg-warning-subtle text-center rounded-4">Low Stock</div>
+        <div class="border border-2 p-1 bg-danger-subtle text-center rounded-4">Out of Stock</div>
+    </div>
     <!-- Action Section -->
     <div class="d-flex flex-column  justify-content-center mt-4 mb-2 w-100">
         <div class="d-flex justify-content-between w-100">
             <button class="btn btn-primary d-flex align-items-center" type="button" data-bs-toggle="collapse" data-bs-target="#searchSection" aria-expanded="false" aria-controls="searchSection" title="Search Product(s)"> 
-                Search Product  <span class="material-symbols-outlined">search</span>
+               <span class="material-symbols-outlined">search</span>
             </button>
+            
             <div class="d-flex gap-1">
+                <a href="{% url 'products' %}" id="reset_query_link" class="btn btn-primary" style="display: none;" title="undo">
+                    <span class="material-symbols-outlined">undo</span>
+                </a> 
                 <button id="barcodes" type="button" class="btn btn-md btn-primary d-flex align-items-center " title="Custom Barcodes">
                     <a class="text-decoration-none link-light" href="{% url 'custom_barcodes' %}" target="_blank"><span class="material-symbols-outlined">barcode</span></a>
                 </button>
@@ -116,10 +125,10 @@
             </div>
         </div>
     </div>
-
+    
     <!--Table-->
     <div class="table overflow-x-auto">
-        <table class="table table-bordered table-responsive justify-content-center table-striped">
+        <table class="table table-bordered table-responsive justify-content-center ">
             <thead class="table-secondary align-middle">
                 <tr class="h5">
                     <th >ID</th>
@@ -137,9 +146,9 @@
             <tbody class="align-middle fw-bold">
                 {% for product in page_obj.object_list %}
                     {% if product.stock == 0 %}
-                    <tr class="table-danger">
+                    <tr class="table-danger" title="Out Of Stock">
                     {% elif product.stock < 10 %}
-                    <tr class="table-warning">
+                    <tr class="table-warning" title="Low On Stock">
                     {% else %}
                     <tr>
                     {% endif %}
@@ -232,7 +241,11 @@
         </nav>
   </div>
 </div>
-
+<script>
+    if (window.location.search){
+        document.getElementById("reset_query_link").style.display = "flex";
+    }
+</script>
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         const params = new URLSearchParams(window.location.search);

@@ -748,7 +748,7 @@ def member_card(request, customerPhone):
                 qr_svg_data = qr.to_string()
                 member_qr = base64.b64encode(qr_svg_data).decode('utf-8')
     except Customer.DoesNotExist:
-        messages.error(request, f"Customer with phone:{customerPhone} does not exist!!")
+        messages.error(request, f"Customer with phone: +880 {customerPhone} does not exist!!")
         return redirect('customers')
                      
     context = {
